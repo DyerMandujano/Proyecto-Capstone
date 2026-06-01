@@ -1,0 +1,96 @@
+<div class="container-quiz">
+
+    <!-- TÍTULO DE LA EVALUACIÓN -->
+    <h1>📋 {{ evaluacion[0]?.titulo }}</h1>
+    <p class="subtitle">
+        Evaluación del Curso - Sección: {{ evaluacion[0]?.idSeccion }}
+    </p>
+
+    <div class="progress-info">
+        <small>{{ evaluaciones.length }} preguntas para evaluar tu conocimiento</small>
+    </div>
+
+    <form>
+
+        <!-- LISTADO DE PREGUNTAS DINÁMICAS -->
+        <div *ngFor="let item of evaluaciones; let i = index" class="pregunta">
+
+            <!-- ENCABEZADO DE LA PREGUNTA -->
+            <div class="pregunta-titulo">
+                <span class="numero-pregunta">{{ i + 1 }}</span>
+                {{ item.enunciado }}
+            </div>
+
+            <!-- OPCIÓN 1 -->
+            <div class="form-check">
+                <input 
+                    class="form-check-input"
+                    type="radio"
+                    [name]="'q' + item.idPregunta"
+                    [id]="'p' + item.idPregunta + '_o1'"
+                    [value]="item.idOp1"
+                >
+                <label 
+                    class="form-check-label"
+                    [for]="'p' + item.idPregunta + '_o1'"
+                >
+                    {{ item.opcion1 }}
+                </label>
+            </div>
+
+            <!-- OPCIÓN 2 -->
+            <div class="form-check">
+                <input 
+                    class="form-check-input"
+                    type="radio"
+                    [name]="'q' + item.idPregunta"
+                    [id]="'p' + item.idPregunta + '_o2'"
+                    [value]="item.idOp2"
+                >
+                <label 
+                    class="form-check-label"
+                    [for]="'p' + item.idPregunta + '_o2'"
+                >
+                    {{ item.opcion2 }}
+                </label>
+            </div>
+
+            <!-- OPCIÓN 3 -->
+            <div class="form-check">
+                <input 
+                    class="form-check-input"
+                    type="radio"
+                    [name]="'q' + item.idPregunta"
+                    [id]="'p' + item.idPregunta + '_o3'"
+                    [value]="item.idOp3"
+                >
+                <label 
+                    class="form-check-label"
+                    [for]="'p' + item.idPregunta + '_o3'"
+                >
+                    {{ item.opcion3 }}
+                </label>
+            </div>
+
+        </div>
+
+        <!-- BOTONES -->
+        <div class="btn-group-actions">
+            <button type="button" class="btn-enviar">
+                Enviar Respuestas
+            </button>
+
+            <button type="reset" class="btn-limpiar">
+                Limpiar
+            </button>
+        <div style="margin-top: 20px; text-align: center;">
+            <button type="button" class="btn btn-success" (click)="obtenerCertificado()" 
+                    style="background-color: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%;">
+                🏅 Obtener Certificado
+            </button>
+        </div>
+        </div>
+
+    </form>
+
+</div>

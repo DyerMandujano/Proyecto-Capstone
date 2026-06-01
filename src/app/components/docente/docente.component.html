@@ -1,0 +1,361 @@
+<header class="p-3 bg-white shadow-sm">
+  <div class="container-fluid d-flex justify-content-between align-items-center">
+    <a class="navbar-brand fw-bold" routerLink="/">SkillUP</a>
+
+    <div class="d-flex align-items-center gap-3">
+      <h5 class="mb-0 fw-bold">BIENVENIDO DOCENTE, {{ nombreDelDocente | uppercase }}</h5>
+      <img src="img/docente/iconoDocente.png" alt="Foto Perfil" 
+           class="rounded-circle border" width="50" height="50">
+    </div>
+
+    <div>
+<button 
+  type="button" 
+  class="btn btn-outline-success me-2"
+  (click)="exportarExcel()">
+  <i class="bi bi-gear-fill"></i> Exportar Certificados
+</button>
+      <button type="button" class="btn btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#configModal">
+        <i class="bi bi-gear-fill"></i> Configuración
+      </button>
+      <button (click)="onLogout()" class="btn btn-outline-danger ms-2">
+         <i class="bi bi-box-arrow-right"></i> Salir
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="container-fluid">
+  <div class="row">
+
+    <nav class="col-md-3 col-lg-2 sidebar d-md-block p-3">
+      <h5 class="fw-bold mb-4">Panel Docente</h5>
+      <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+        <button class="nav-link active" id="v-pills-cursos-tab" data-bs-toggle="pill" data-bs-target="#v-pills-cursos" type="button" role="tab">📚 Cursos Dictados</button>
+        <button class="nav-link" id="v-pills-comunicacion-tab" data-bs-toggle="pill" data-bs-target="#v-pills-comunicacion" type="button" role="tab">💬 Comunicación</button>
+        <button class="nav-link" id="v-pills-rendimiento-tab" data-bs-toggle="pill" data-bs-target="#v-pills-rendimiento" type="button" role="tab">📊 Rendimiento</button>
+      </div>
+    </nav>
+
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+      
+      <section class="container-fluid">
+        <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i> {{ successMessage }}
+            <button type="button" class="btn-close" (click)="successMessage = null" aria-label="Close"></button>
+        </div>
+        <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> {{ errorMessage }}
+            <button type="button" class="btn-close" (click)="errorMessage = null" aria-label="Close"></button>
+        </div>
+      </section>
+
+      <div class="tab-content" id="v-pills-tabContent">
+
+        <div class="tab-pane fade show active" id="v-pills-cursos" role="tabpanel">
+          <h4 class="mb-4">📚 Cursos Dictados</h4>
+          <button class="btn btn-primary mt-3" (click)="navegarRegistrarCurso()">➕ Ingresar nuevo curso</button>
+
+          <div class="table-responsive">
+            <table class="table table-striped align-middle">
+              <thead>
+                <tr>
+                  <th>Id Curso</th>
+                  <th>Nombre del Curso</th>
+                  <th>Nivel</th>
+                  <th>Fecha Publicación</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="cursos.length === 0">
+                  <td colspan="6" class="text-center text-muted">
+                    Aún no has registrado ningún curso.
+                  </td>
+                </tr>
+                <tr *ngFor="let curso of cursos">
+                  <td>{{curso.idCurso}}</td>
+                  <td>{{curso.nombreCurso}}</td>
+                  <td>{{curso.nivel}}</td>
+                  <td>{{curso.fechaPublicacion}}</td>
+                  <td>
+                    <span class="badge" [ngClass]="curso.estado === 1 ? 'bg-success' : 'bg-danger'">
+                      {{ curso.estado === 1 ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="d-flex gap-2">
+                      <button class="btn btn-warning btn-sm" (click)="navegarActualizarCurso(curso.idCurso)">Actualizar</button>
+                      <button class="btn btn-danger btn-sm" (click)="eliminarCurso(curso.idCurso)">Eliminar</button>
+                      <button class="btn btn-primary btn-sm" (click)="navegarSeccion(curso.idCurso)">Secciones</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+        </div>
+
+        <div class="tab-pane fade" id="v-pills-comunicacion" role="tabpanel">
+          <h4 class="mb-4">💬 Comunicación</h4>
+          <div class="list-group">
+            <div class="list-group-item">
+              <h6><strong>Estudiante:</strong> Juan Pérez</h6>
+              <p>¿Cómo se utiliza la herramienta en la práctica de carpintería?</p>
+              <textarea class="form-control mb-2" placeholder="Responder..."></textarea>
+              <button class="btn btn-sm btn-success">Responder</button>
+            </div>
+            <div class="list-group-item">
+              <h6><strong>Estudiante:</strong> María López</h6>
+              <p>¿Cuál es el tiempo estimado de duración del curso de electricidad?</p>
+              <textarea class="form-control mb-2" placeholder="Responder..."></textarea>
+              <button class="btn btn-sm btn-success">Responder</button>
+            </div>
+             <div class="list-group-item">
+              <h6><strong>Estudiante:</strong> Juan Riquelme </h6>
+              <p>¿Cuál es el tiempo estimado de duración del curso de electricidad?</p>
+              <textarea class="form-control mb-2" placeholder="Responder..."></textarea>
+              <button class="btn btn-sm btn-success">Responder</button>
+            </div>
+             <div class="list-group-item">
+              <h6><strong>Estudiante:</strong> Pedro López</h6>
+              <p>¿Cuál es el tiempo estimado de duración del curso de electricidad?</p>
+              <textarea class="form-control mb-2" placeholder="Responder..."></textarea>
+              <button class="btn btn-sm btn-success">Responder</button>
+            </div>
+             <div class="list-group-item">
+              <h6><strong>Estudiante:</strong> Lorena Cardona</h6>
+              <p>¿Cuál es el tiempo estimado de duración del curso de electricidad?</p>
+              <textarea class="form-control mb-2" placeholder="Responder..."></textarea>
+              <button class="btn btn-sm btn-success">Responder</button>
+            </div>
+             <div class="list-group-item">
+              <h6><strong>Estudiante:</strong> Soledad Machaca</h6>
+              <p>¿Cuál es el tiempo estimado de duración del curso de electricidad?</p>
+              <textarea class="form-control mb-2" placeholder="Responder..."></textarea>
+              <button class="btn btn-sm btn-success">Responder</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="v-pills-rendimiento" role="tabpanel">
+          <div class="container-fluid py-4">
+            <h3 class="fw-bold mb-3">Rendimiento</h3>
+            <p class="text-muted">Métricas y estadísticas de tu desempeño como instructor</p>
+
+            <div class="row g-3 mb-4">
+              <div class="col-md-3">
+                <div class="metric-card">
+                  <div class="fs-3">👥</div>
+                  <h4>490</h4>
+                  <small>Estudiantes Totales</small>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="metric-card">
+                  <div class="fs-3 star">⭐</div>
+                  <h4>4.8</h4>
+                  <small>Calificación Promedio</small>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="metric-card">
+                  <div class="fs-3 text-success">🎓</div>
+                  <h4>48</h4>
+                  <small>Certificados Emitidos</small>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="metric-card">
+                  <div class="fs-3 text-primary">👁️</div>
+                  <h4>3500</h4>
+                  <small>Visualizaciones Totales</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-7">
+                <div class="course-performance">
+                  <h5 class="fw-bold mb-3">Rendimiento por Curso</h5>
+                  
+                  <div class="mb-4">
+                    <p class="mb-1 fw-semibold">Gasfitería Básica: Instalación y Reparación de Tuberías</p>
+                    <div class="d-flex justify-content-between small mb-1">
+                      <span class="star">⭐ 4.8</span>
+                      <span>245 estudiantes</span>
+                      <span>👁️ 2000</span>
+                    </div>
+                    <div class="progress">
+                      <div class="progress-bar bg-dark" style="width: 80%"></div>
+                    </div>
+                  </div>
+
+                  <div class="mb-4">
+                    <p class="mb-1 fw-semibold">Gasfitería Avanzada: Sistemas de Calefacción</p>
+                    <div class="d-flex justify-content-between small mb-1">
+                      <span class="star">⭐ 4.9</span>
+                      <span>89 estudiantes</span>
+                      <span>👁️ 500</span>
+                    </div>
+                    <div class="progress">
+                      <div class="progress-bar bg-dark" style="width: 60%"></div>
+                    </div>
+                  </div>
+
+                  <div class="mb-2">
+                    <p class="mb-1 fw-semibold">Reparación de Tuberías Especializadas</p>
+                    <div class="d-flex justify-content-between small mb-1">
+                      <span class="star">⭐ 4.7</span>
+                      <span>156 estudiantes</span>
+                      <span>👁️ 1000</span>
+                    </div>
+                    <div class="progress">
+                      <div class="progress-bar bg-dark" style="width: 70%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-5">
+                <div class="activity-card">
+                  <h5 class="fw-bold mb-3">Actividades Recientes</h5>
+                  <ul class="list-group list-group-flush">
+                    <li class="list-group-item px-0">
+                      <strong>Ana Torres</strong> se inscribió en <em>Gasfitería Básica</em>  
+                      <div class="text-muted small">hace 30 min</div>
+                    </li>
+                    <li class="list-group-item px-0">
+                      <strong>Miguel Santos</strong> completó el módulo de soldadura  
+                      <div class="text-muted small">hace 1 hora</div>
+                    </li>
+                    <li class="list-group-item px-0">
+                      Nueva pregunta en <em>Gasfitería Avanzada</em>  
+                      <div class="text-muted small">hace 2 horas</div>
+                    </li>
+                    <li class="list-group-item px-0">
+                      <strong>Juan Pérez</strong> obtuvo certificado en <em>Gasfitería Básica</em>  
+                      <div class="text-muted small">hace 4 horas</div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<div class="modal fade" id="configModal" tabindex="-1" aria-labelledby="configModalLabel" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="configModalLabel">Configuración de la Cuenta</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <form *ngIf="profileData" (ngSubmit)="onUpdateProfile()">
+        <div class="modal-body">
+          <ul class="nav nav-tabs" id="configTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="perfil-tab" data-bs-toggle="tab" data-bs-target="#perfil" type="button" role="tab" aria-controls="perfil" aria-selected="true">
+                <i class="bi bi-person-vcard"></i> Editar Perfil
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab" aria-controls="password" aria-selected="false">
+                <i class="bi bi-key"></i> Cambiar Contraseña
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="danger-tab" data-bs-toggle="tab" data-bs-target="#danger" type="button" role="tab" aria-controls="danger" aria-selected="false">
+                <i class="bi bi-exclamation-triangle"></i> Zona de Peligro
+              </button>
+            </li>
+          </ul>
+
+          <div class="tab-content pt-3" id="configTabsContent">
+            <div class="tab-pane fade show active" id="perfil" role="tabpanel" aria-labelledby="perfil-tab">
+              <h6 class="mb-3">Información Personal</h6>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="nombres" class="form-label">Nombres</label>
+                  <input type="text" class="form-control" id="nombres" name="nombres" [(ngModel)]="profileData.nombres" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="apellidos" class="form-label">Apellidos</label>
+                  <input type="text" class="form-control" id="apellidos" name="apellidos" [(ngModel)]="profileData.apellidos" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento</label>
+                  <input type="date" class="form-control" id="fechaNacimiento" name="fechaNacimiento" [(ngModel)]="profileData.fechaDeNacimiento">
+                </div>
+                <div class="col-md-6">
+                  <label for="genero" class="form-label">Género</label>
+                  <select id="genero" name="genero" class="form-select" [(ngModel)]="profileData.genero">
+                    <option value="Masculino">Masculino</option>
+                    <option value="Femenino">Femenino</option>
+                    <option value="Otro">Otro</option>
+                    <option value="">Prefiero no decir</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
+               <p class="text-muted small">Esta función requiere un endpoint en el backend (Próximo paso).</p>
+            </div>
+            
+            <div class="tab-pane fade" id="danger" role="tabpanel" aria-labelledby="danger-tab">
+                 <div class="p-3 border border-danger rounded">
+                    <h5 class="text-danger">Dar de baja la cuenta</h5>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteConfirmModal">
+                      Solicitar baja de mi cuenta
+                    </button>
+                 </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="deleteConfirmModalLabel">¿Estás absolutamente seguro?</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form (ngSubmit)="onDeleteAccount()">
+          <div class="modal-body">
+            <p>Esta acción <strong>no se puede deshacer</strong>.</p>
+            <p>Para confirmar, escribe tu nombre de usuario (<strong>{{ currentUser?.username }}</strong>) abajo.</p>
+            <input type="text" class="form-control" name="confirmDeleteInput" 
+                   placeholder="Escribe tu nombre de usuario" 
+                   [(ngModel)]="confirmUsername" 
+                   autocomplete="off">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-danger" 
+                    [disabled]="confirmUsername !== currentUser?.username">
+                Entiendo, dar de baja mi cuenta
+            </button>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>
+

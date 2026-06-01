@@ -1,0 +1,63 @@
+/* Banner principal */
+.banner-container img {
+    height: 300px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Imágenes de cursos - mismo tamaño para todas */
+.course-card img {
+    height: 160px;
+    object-fit: cover;
+}
+
+.card img {
+    height: 160px;
+    object-fit: cover;
+}
+
+/* Progress bar */
+.progress-bar {
+    background-color: #6610f2;
+}
+
+/* Títulos de sección */
+.section-title {
+    font-weight: 600;
+    margin: 20px 0 10px;
+    color: #0A192F;
+}
+
+/* Estilos para las tarjetas */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Botones */
+.btn-primary {
+    background-color: #0A192F;
+    border-color: #0A192F;
+}
+
+.btn-primary:hover {
+    background-color: #D4AF37;
+    border-color: #D4AF37;
+    color: #0A192F;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}

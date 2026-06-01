@@ -1,0 +1,125 @@
+<div class="contenedorPrincipal" id="contenedorPrincipal">
+
+    <!-- =========== FORMULARIO DE REGISTRO =========== -->
+    <div class="contenedor-formulario contenedor-registro" id="registro">
+        
+        <!-- 
+          1. (ngSubmit) llama a tu función 'onRegisterSubmit'
+          2. #registerForm="ngForm" crea una referencia local para el formulario
+        -->
+        <form (ngSubmit)="onRegisterSubmit()" #registerForm="ngForm">
+            <h1>Crear una Cuenta</h1>
+            <span>Usa tu correo para registrarte</span>
+
+            <!-- 
+              3. [(ngModel)] conecta este input a 'registerData.nombres'
+              4. 'name' es OBLIGATORIO para que ngModel funcione
+              5. 'required' ahora es manejado por Angular
+            -->
+            <input class="input-formulario" type="text" placeholder="Nombres" 
+                   [(ngModel)]="registerData.nombres" name="nombres" required />
+            
+            <input class="input-formulario" type="text" placeholder="Apellidos" 
+                   [(ngModel)]="registerData.apellidos" name="apellidos" required />
+            
+            <!-- 
+              IMPORTANTE: El 'name' debe ser único dentro del formulario.
+              Usamos 'username_reg' y 'contrasenia_reg' para diferenciar.
+            -->
+            <input class="input-formulario" type="text" placeholder="Username" 
+                   [(ngModel)]="registerData.username" name="username_reg" required />
+            
+            <input class="input-formulario" type="password" placeholder="Contraseña" 
+                   [(ngModel)]="registerData.contrasenia" name="contrasenia_reg" required />
+
+            <label for="fecha_nac" class="input-label">Fecha de Nacimiento:</label>
+            <input class="input-formulario" id="fecha_nac" type="date" 
+                   [(ngModel)]="registerData.fecha_nacimiento" name="fecha_nacimiento" required style="margin-top: 2px;"/>
+            
+            <select class="input-formulario" [(ngModel)]="registerData.genero" name="genero" required>
+                <option value="" disabled selected>Selecciona tu género</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Femenino">Femenino</option>
+                <option value="Otro">Otro</option>
+            </select>
+            
+            <!-- Los 'radio' buttons no necesitan ngModel aquí, -->
+            <!-- porque tu .ts ya los maneja con 'getElementById' en ngAfterViewInit -->
+            <div style="display: flex; justify-content: space-around; width: 100%; margin: 10px 0; font-size: 0.9em;">
+                <label>
+                    <input type="radio" name="rol" value="estudiante" id="rolEstudiante" required> Soy Estudiante
+                </label>
+                <label>
+                    <input type="radio" name="rol" value="docente" id="rolDocente" required> Soy Docente
+                </label>
+            </div>
+
+            <!-- Campos condicionales (manejados por la lógica en .ts) -->
+            <div id="camposEstudiante" style="display:none; width:100%;">
+                <select class="input-formulario" [(ngModel)]="registerData.nivel_educativo" name="nivel_educativo">
+                    <option value="" disabled selected>Selecciona tu Nivel Educativo</option>
+                    <option value="Secundaria">Secundaria</option>
+                    <option value="Superior">Superior</option>
+                    <option value="Postgrado">Postgrado</option>
+                </select>
+            </div>
+
+            <div id="camposDocente" style="display:none; width:100%;">
+                <input class="input-formulario" type="text" placeholder="Especialidad (ej: Ing. de Software)" 
+                       [(ngModel)]="registerData.especialidad" name="especialidad" />
+                <input class="input-formulario" type="text" placeholder="Grado Académico (ej: Magíster)" 
+                       [(ngModel)]="registerData.grado_academico" name="grado_academico" />
+            </div>
+            
+            <!-- 6. Mensajes de estado (se muestran condicionalmente) -->
+            <div *ngIf="registroExitoso" style="color: green; margin: 10px 0;">{{ registroExitoso }}</div>
+            <div *ngIf="registroError" style="color: red; margin: 10px 0;">{{ registroError }}</div>
+
+            <!-- 7. El botón se deshabilita si el formulario no es válido -->
+            <button class="btn" type="submit" [disabled]="!registerForm.valid">Registrarse</button>
+        </form>
+    </div>
+
+    <!-- =========== FORMULARIO DE INICIO DE SESIÓN =========== -->
+    <div class="contenedor-formulario contenedor-inicio-sesion" id="iniciar">
+        
+        <!-- Conectamos el formulario de Login -->
+        <form (ngSubmit)="onLoginSubmit()" #loginForm="ngForm">
+            <h1>Iniciar Sesión</h1>
+            <span>Usa tu cuenta</span>
+            
+            <input class="input-formulario" type="text" placeholder="Username" 
+                   [(ngModel)]="loginData.username" name="username_login" required />
+            
+            <input class="input-formulario" type="password" placeholder="Contraseña" 
+                   [(ngModel)]="loginData.contrasenia" name="contrasenia_login" required />
+            
+            <!-- Mostramos el mensaje de error de login -->
+            <div *ngIf="loginError" style="color: red; margin-bottom: 10px; font-size: 0.9em;">
+                {{ loginError }}
+            </div>
+            
+            <a href="#" class="enlace-formulario">¿Olvidaste tu contraseña?</a>
+            <button class="btn" type="submit" [disabled]="!loginForm.valid">Ingresar</button>
+            <a href="loginAdmin.html" class="enlace-formulario"> Administrador</a>
+        </form>
+    </div>
+
+    <!-- =========== PANELES DE ANIMACIÓN (Estos quedan igual) =========== -->
+    <div class="contenedor-superposicion">
+        <div class="superposicion">
+            <div class="panel-superposicion superposicion-izquierda">
+                <h2 class="encabezado-panel">¡Bienvenido de Nuevo!</h2>
+                <p class="texto-panel">Para seguir conectado con nosotros, por favor inicia sesión con tu información personal.</p>
+                <!-- Este botón es manejado por ngAfterViewInit en tu .ts -->
+                <button class="btn fantasma" id="botonInicioSesion">Ingresar</button>
+            </div>
+            <div class="panel-superposicion superposicion-derecha">
+                <h2 class="encabezado-panel">¡Hola, Amigo!</h2>
+                <p class="texto-panel">Ingresa tus datos personales y comienza esta aventura con nosotros.</p>
+                <!-- Este botón es manejado por ngAfterViewInit en tu .ts -->
+                <button class="btn fantasma" id="botonRegistro">Registrarse</button>
+            </div>
+        </div>
+    </div>
+</div>

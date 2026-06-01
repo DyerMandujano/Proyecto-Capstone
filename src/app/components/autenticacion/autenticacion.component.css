@@ -1,0 +1,475 @@
+/* --- Reemplaza todo tu CSS con esto --- */
+:host {
+    display: flex;
+    justify-content: center; /* Centra el contenido (contenedorPrincipal) horizontalmente */
+    align-items: center; /* Centra el contenido (contenedorPrincipal) verticalmente */
+    min-height: 100vh; 
+    width: 100%;
+}
+
+.contenedorPrincipal {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 14px 28px rgba(0,0,0,0.15),
+                0 10px 10px rgba(0,0,0,0.12);
+    position: relative;
+    width: 768px;
+    max-width: 100%;
+    min-height: 780px; /* Tu valor de 780px */
+}
+
+.contenedor-formulario {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    transition: all 0.6s ease-in-out;
+}
+
+.contenedor-inicio-sesion {
+    left: 0;
+    width: 50%;
+    z-index: 2;
+}
+
+.contenedor-registro {
+    left: 0;
+    width: 50%;
+    opacity: 0; 
+    z-index: 1;
+}
+
+/* * CAMBIO 1: 
+ * El 'form' general ahora centra todo por defecto.
+ * Esto arreglará tu formulario de "Iniciar Sesión".
+*/
+form {
+    background-color: #ffffff; 
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Centrado por defecto */
+    flex-direction: column;
+    padding: 0 50px; /* Padding vertical se quita de aquí */
+    height: 100%;
+    text-align: center;
+}
+
+/* * CAMBIO 2: ¡REGLA NUEVA!
+ * Esta regla es más específica y se aplica SÓLO al formulario
+ * de registro, alineándolo arriba y dándole su padding.
+*/
+.contenedor-registro form {
+    justify-content: flex-start; /* Alinea el registro arriba */
+    padding: 40px 50px; /* Le devuelve el padding vertical */
+}
+
+
+h1 {
+    font-weight: bold;
+    margin: 0 0 1rem;
+    font-size: 1.75rem;
+    color: #0c4a6e;
+}
+
+/* --- ESTILOS DE LA SUPERPOSICIÓN --- */
+
+.contenedor-superposicion {
+    position: absolute;
+    top: 0;
+    left: 50%; 
+    width: 50%; 
+    height: 100%;
+    overflow: hidden;
+    transition: transform 0.6s ease-in-out;
+    z-index: 100;
+}
+
+.superposicion {
+    background-color: #3595DB; 
+    color: #FFFFFF; 
+    position: relative;
+    left: -100%;
+    height: 100%;
+    width: 200%;
+    transform: translateX(0);
+    transition: transform 0.6s ease-in-out;
+}
+
+.panel-superposicion {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 0 40px;
+    text-align: center;
+    top: 0;
+    height: 100%;
+    width: 50%; 
+    transform: translateX(0);
+    transition: transform 0.6s ease-in-out;
+}
+
+.superposicion-izquierda {
+    transform: translateX(-20%);
+}
+
+.superposicion-derecha {
+    right: 0;
+    transform: translateX(0);
+}
+
+h2.encabezado-panel {
+    font-weight: bold;
+    margin: 0 0 1rem;
+    font-size: 1.75rem;
+    color: #FFFFFF; 
+}
+
+p.texto-panel {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 20px;
+    letter-spacing: 0.5px;
+    margin: 20px 0 30px;
+    color: #FFFFFF;
+}
+
+button.btn.fantasma {
+    background-color: transparent;
+    border: 1px solid #FFFFFF; 
+    color: #FFFFFF; 
+}
+button.btn.fantasma:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+
+.contenedorPrincipal.panel-derecho-activo .contenedor-inicio-sesion {
+    transform: translateX(100%); 
+}
+
+.contenedorPrincipal.panel-derecho-activo .contenedor-registro {
+    transform: translateX(100%);
+    opacity: 1;
+    z-index: 5;
+    animation: mostrar 0.6s;
+}
+
+@keyframes mostrar {
+    0%, 49.99% {
+        opacity: 0;
+        z-index: 1;
+    }
+    50%, 100% {
+        opacity: 1;
+        z-index: 5;
+    }
+}
+
+.contenedorPrincipal.panel-derecho-activo .contenedor-superposicion {
+    transform: translateX(-100%);
+}
+
+.contenedorPrincipal.panel-derecho-activo .superposicion {
+    transform: translateX(50%);
+}
+
+
+.contenedorPrincipal.panel-derecho-activo .superposicion-izquierda {
+    transform: translateX(0);
+}
+
+.contenedorPrincipal.panel-derecho-activo .superposicion-derecha {
+    transform: translateX(20%);
+}
+
+
+input.input-formulario,
+select.input-formulario { /* Aplicado a select también */
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    padding: 12px 15px;
+    margin: 10px 0; /* Más margen */
+    width: 100%;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #082f49;
+}
+input.input-formulario::placeholder {
+    color: #60a5fa;
+}
+input.input-formulario:focus,
+select.input-formulario:focus { /* Aplicado a select también */
+    outline: 2px solid #38bdf8;
+    border-color: #38bdf8;
+}
+
+button.btn {
+    border-radius: 20px;
+    border: 1px solid #0ea5e9;
+    background-color: #0ea5e9;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 12px 45px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: transform 80ms ease-in, background-color 0.2s, border-color 0.2s;
+    cursor: pointer;
+    margin-top: 20px; /* Más margen */
+}
+
+.btn {
+    border-radius: 20px;
+    border: 1px solid #0ea5e9;
+    background-color: #0ea5e9;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 12px 45px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: transform 80ms ease-in, background-color 0.2s, border-color 0.2s;
+    cursor: pointer;
+    margin-top: 20px; /* Más margen */
+}
+button.btn:active {
+    transform: scale(0.95);
+}
+button.btn:focus {
+    outline: none;
+}
+button.btn:hover {
+    background-color: #0284c7;
+    border-color: #0284c7;
+}
+
+a.enlace-formulario {
+    color: #0ea5e9;
+    font-size: 14px;
+    text-decoration: none;
+    margin: 15px 0;
+}
+a.enlace-formulario:hover {
+    color: #0284c7;
+    text-decoration: underline;
+}
+
+.contenedor-social {
+    margin: 20px 0;
+}
+.contenedor-social a {
+    border: 1px solid #bae6fd;
+    border-radius: 50%;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 5px;
+    height: 40px;
+    width: 40px;
+    color: #0c4a6e;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+.contenedor-social a:hover {
+    background-color: #0c4a6e;
+    color: #ffffff;
+}
+.icono-huella {
+    width: 1.25em;
+    height: 1.25em;
+    fill: currentColor;
+}
+span {
+    font-size: 12px;
+    color: #1f2937;
+    margin-bottom: 10px;
+}
+/* ------ ADMIN----- */
+/* Variables de color */
+:root {
+    --primary-color: #4361ee;
+    --secondary-color: #3f37c9;
+}
+
+.background-animation {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.1;
+}
+/* Contenedor principal */
+.login-container {
+    background-color: white;
+    border-radius: 20px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 450px;
+    padding: 40px;
+    text-align: center;
+    transform-style: preserve-3d;
+    transition: all 0.5s ease;
+    position: relative;
+    overflow: hidden;
+}
+.login-container::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    transform: rotate(45deg);
+    z-index: -1;
+    animation: shine 3s infinite;
+}
+/* Encabezado */
+.login-header {
+    margin-bottom: 30px;
+}
+.logo {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 15px;
+    filter: drop-shadow(0 5px 10px rgba(67, 97, 238, 0.3));
+    animation: float 3s ease-in-out infinite;
+}
+.login-header h1 {
+    color: var(--primary-color);
+    font-size: 28px;
+    margin-bottom: 5px;
+    font-weight: 700;
+}
+
+.login-header p {
+    opacity: 0.7;
+    font-size: 14px;
+}
+
+/* Formulario */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 0 15px;
+    border: 2px solid #e9ecef;
+}
+.input-group i {
+    color: var(--primary-color);
+    margin-right: 10px;
+    font-size: 16px;
+}
+.input-group input {
+    flex: 1;
+    padding: 15px 0;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    outline: none;
+}
+.input-group input::placeholder {
+    color: #adb5bd;
+}
+.toggle-password {
+    color: #adb5bd;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+.toggle-password:hover {
+    color: var(--primary-color);
+}
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+}
+.forgot-password {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+.forgot-password:hover {
+    color: var(--secondary-color);
+    text-decoration: underline;
+}
+.login-btn {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    text-decoration: none;
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+}
+.social-login {
+    margin-top: 20px;
+}
+.social-login p {
+    color: #6c757d;
+    font-size: 13px;
+    margin-bottom: 15px;
+    position: relative;
+}
+.social-login p::before,
+.social-login p::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 30%;
+    height: 1px;
+    background-color: #e9ecef;
+}
+.social-login p::before {
+    left: 0;
+}
+.social-login p::after {
+    right: 0;
+}
+.login-footer {
+    margin-top: 30px;
+    font-size: 12px;
+    color: #6c757d;
+}
+.login-footer a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+.login-footer a:hover {
+    text-decoration: underline;
+}
+.btn-back {
+    text-decoration: none;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: var(--primary-color);
+    padding: 10px 15px 10px 10px;
+    border-radius: 50px;
+    border:none;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 10;
+}
+.btn-back:hover {
+    background-color: white;
+    color: var(--secondary-color);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    transform: translateX(-3px);
+}

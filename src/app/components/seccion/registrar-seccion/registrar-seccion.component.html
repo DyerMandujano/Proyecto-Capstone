@@ -1,0 +1,83 @@
+
+<app-docente-header></app-docente-header>
+<a href=""></a>
+
+<!-- Layout principal -->
+<div class="container-fluid">
+  <div class="row">
+
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-lg-2 sidebar d-md-block p-3">
+      <h5 class="fw-bold mb-4">Panel Docente</h5>
+      <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+        <button class="nav-link active" id="v-pills-cursos-tab" data-bs-toggle="pill" data-bs-target="#v-pills-cursos" type="button" role="tab">📚 Cursos Dictados</button>
+        <button class="nav-link" id="v-pills-comunicacion-tab" data-bs-toggle="pill" data-bs-target="#v-pills-comunicacion" type="button" role="tab">💬 Comunicación</button>
+        <button class="nav-link" id="v-pills-rendimiento-tab" data-bs-toggle="pill" data-bs-target="#v-pills-rendimiento" type="button" role="tab">📊 Rendimiento</button>
+      </div>
+    </nav>
+
+    <!-- Contenido -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+      <div class="tab-content" id="v-pills-tabContent">
+
+        <!-- Cursos Dictados -->
+        <div class="tab-pane fade show active" id="v-pills-cursos" role="tabpanel" aria-labelledby="v-pills-cursos-tab">
+          <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white fw-bold text-center">
+              <h2><strong>Crear Nueva Seccion</strong></h2>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-center mb-3">
+        <img src="img/seccion/insertSeccion.png" width="200" height="200" class="img-fluid mb-3" alt="Imagen del curso">
+      </div>
+              <form class="row g-3" class="row g-3" (ngSubmit)="registrarSeccion()" #formSeccion="ngForm">
+
+                <!-- Comunicación 
+                <input type="number"
+         class="form-control"
+         id="idcurso"
+         name="idcurso"
+         [(ngModel)]="nuevaSeccion.idCurso"
+         readonly>-->
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Nombre Seccion</label>
+                  <input type="text" class="form-control" 
+                  name="nombreSeccion"
+                  [(ngModel)]="nuevaSeccion.nombreSeccion"
+                  required>
+                </div>
+
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Orden Seccion</label>
+                    <input type="number" class="form-control"
+                          name="ordenSeccion"
+                          [(ngModel)]="nuevaSeccion.ordenSeccion"
+                          placeholder="Ej: 5" required>
+                </div>
+
+                <div class="col-12 d-flex justify-content-end gap-3 mt-3">
+                  <button type="submit" class="btn btn-success px-4">Guardar Seccion</button>
+                  <button type="reset" class="btn btn-secondary px-4">Limpiar</button>
+                </div>
+
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comunicación -->
+        <div class="tab-pane fade" id="v-pills-comunicacion" role="tabpanel" aria-labelledby="v-pills-comunicacion-tab">
+          <h5>Sección de Comunicación</h5>
+        </div>
+
+        <!-- Rendimiento -->
+        <div class="tab-pane fade" id="v-pills-rendimiento" role="tabpanel" aria-labelledby="v-pills-rendimiento-tab">
+          <h5>Panel de Rendimiento</h5>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>

@@ -1,0 +1,186 @@
+<header class="bg-azul-oscuro/80 backdrop-blur-md shadow-lg shadow-black/20 sticky top-0 z-50 border-b border-gray-700">
+    <nav class="container mx-auto px-4 lg:px-6 py-4 flex justify-between items-center">
+        <a href="#" class="text-2xl font-bold text-dorado">Skillup</a>
+
+        <div class="hidden lg:flex items-center space-x-6">
+            <a href="#" class="text-gray-300 hover:text-dorado">Categorías</a>
+            
+            <div class="relative">
+                <input type="text" placeholder="Buscar cualquier cosa" class="bg-gray-800 border border-gray-600 rounded-full py-2 px-4 w-80 focus:outline-none focus:ring-2 focus:ring-dorado text-white placeholder-gray-400">
+                <svg class="w-5 h-5 text-gray-400 absolute right-4 top-1/2 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                </svg>
+            </div>
+
+            <a href="#" class="text-gray-300 hover:text-dorado">Enseña aquí</a>
+            <a routerLink="/cursos" class="text-gray-300 hover:text-dorado">Nuestros Instructores</a>
+        </div>
+
+        <div class="hidden lg:flex items-center space-x-4">
+             <a routerLink="/login" class="text-white font-medium py-2 px-4 rounded-md hover:bg-gray-800">Iniciar sesión</a>
+            <a routerLink="/login" class="bg-dorado text-azul-oscuro font-bold py-2 px-4 rounded-md hover:bg-opacity-90 transition-colors">Regístrate</a>
+            
+            <a href="#" class="p-2 rounded-full hover:bg-gray-800">
+                <svg class="w-6 h-6 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c.51 0 .962-.344 1.087-.835l1.823-6.84a1.125 1.125 0 00-1.087-1.352H6.437c-.51 0-.962.344-1.087.835L4.187 11.25M6.75 12h9m-9 3h9" />
+                </svg>
+            </a>
+        </div>
+
+        <div class="lg:hidden">
+            <button class="text-gray-300 focus:outline-none">
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
+            </button>
+        </div>
+    </nav>
+</header>
+
+<main class="container mx-auto px-4 lg:px-6 py-12">
+    <section class="relative rounded-lg overflow-hidden mb-16">
+        <div class="w-full h-80 bg-azul-oscuro flex items-center justify-center">
+             <img src="https://placehold.co/1200x400/D4AF37/0A192F?text=+" alt="Imagen de fondo" class="absolute inset-0 w-full h-full object-cover opacity-10">
+
+            <div class="relative z-10 bg-azul-oscuro/80 backdrop-blur-sm p-8 rounded-lg shadow-xl text-center max-w-2xl border border-gray-700">
+                <h1 class="text-3xl md:text-4xl font-bold text-white mb-4">Domina hoy las habilidades del mañana</h1>
+                <p class="text-gray-300 mb-6">
+                    Perfecciona tus habilidades con un aprendizaje actualizado e impartido por expertos de talla mundial.
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a routerLink="/cursos" class="bg-dorado text-azul-oscuro font-bold py-3 px-6 rounded-lg shadow-md hover:bg-opacity-90 transition-transform hover:scale-105">Explorar Cursos</a>
+                    <a href="#" class="bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md border border-gray-600 hover:bg-gray-600 transition-transform hover:scale-105">Aprende sobre IA</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mt-12">
+        <h2 class="text-3xl font-bold text-white mb-8">Cursos en tendencia</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <div class="bg-white rounded-lg overflow-hidden group cursor-pointer text-gray-800">
+                <img src="https://placehold.co/600x400/F59E0B/FFFFFF?text=Electricidad" alt="Curso de Electricidad" class="w-full h-32 object-cover">
+                <div class="p-4">
+                    <h3 class="font-bold text-md text-gray-800 mb-1 leading-tight group-hover:text-dorado">Curso de Electricidad Residencial</h3>
+                    <p class="text-xs text-gray-500 mb-2">Instructor Experto</p>
+                    <div class="flex items-center text-sm mb-2">
+                        <span class="text-yellow-500 font-bold mr-1">4.9</span>
+                        <span class="text-gray-500 text-xs">(15,280)</span>
+                    </div>
+                    <span class="bg-yellow-200 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded">Popular</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg overflow-hidden group cursor-pointer text-gray-800">
+                <img src="https://placehold.co/600x400/3B82F6/FFFFFF?text=Gasfitería" alt="Curso de Gasfitería" class="w-full h-32 object-cover">
+                <div class="p-4">
+                    <h3 class="font-bold text-md text-gray-800 mb-1 leading-tight group-hover:text-dorado">Instalaciones Sanitarias (Gasfitería)</h3>
+                    <p class="text-xs text-gray-500 mb-2">Instructor Experto</p>
+                    <div class="flex items-center text-sm mb-2">
+                        <span class="text-yellow-500 font-bold mr-1">4.8</span>
+                        <span class="text-gray-500 text-xs">(11,432)</span>
+                    </div>
+                    <span class="bg-yellow-200 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded">Popular</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg overflow-hidden group cursor-pointer text-gray-800">
+                <img src="https://placehold.co/600x400/10B981/FFFFFF?text=Carpintería" alt="Curso de Carpintería" class="w-full h-32 object-cover">
+                <div class="p-4">
+                    <h3 class="font-bold text-md text-gray-800 mb-1 leading-tight group-hover:text-dorado">Carpintería Moderna en Melamina</h3>
+                    <p class="text-xs text-gray-500 mb-2">Instructor Experto</p>
+                    <div class="flex items-center text-sm mb-2">
+                        <span class="text-yellow-500 font-bold mr-1">4.9</span>
+                        <span class="text-gray-500 text-xs">(21,812)</span>
+                    </div>
+                    <span class="bg-yellow-200 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded">Popular</span>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg overflow-hidden group cursor-pointer text-gray-800">
+                <img src="https://placehold.co/600x400/6366F1/FFFFFF?text=Albañilería" alt="Curso de Albañilería" class="w-full h-32 object-cover">
+                <div class="p-4">
+                    <h3 class="font-bold text-md text-gray-800 mb-1 leading-tight group-hover:text-dorado">Curso Práctico de Albañilería</h3>
+                    <p class="text-xs text-gray-500 mb-2">Instructor Experto</p>
+                    <div class="flex items-center text-sm mb-2">
+                        <span class="text-yellow-500 font-bold mr-1">4.7</span>
+                        <span class="text-gray-500 text-xs">(8,450)</span>
+                    </div>
+                    <span class="bg-yellow-200 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded">Popular</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg overflow-hidden group cursor-pointer text-gray-800">
+                <img src="https://placehold.co/600x400/EF4444/FFFFFF?text=Soldadura" alt="Curso de Soldadura" class="w-full h-32 object-cover">
+                <div class="p-4">
+                    <h3 class="font-bold text-md text-gray-800 mb-1 leading-tight group-hover:text-dorado">Soldadura Estructural para Principiantes</h3>
+                    <p class="text-xs text-gray-500 mb-2">Instructor Experto</p>
+                    <div class="flex items-center text-sm mb-2">
+                        <span class="text-yellow-500 font-bold mr-1">4.8</span>
+                        <span class="text-gray-500 text-xs">(19,334)</span>
+                    </div>
+                    <span class="bg-yellow-200 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded">Popular</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mt-20 bg-white py-16 px-8 rounded-lg shadow-lg text-gray-800">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">¿Quiénes somos?</h2>
+                <p class="text-gray-600 mb-4">
+                    En SkillUP, nuestra misión es transformar vidas a través del aprendizaje. Creemos que la educación debe ser accesible para todos, en cualquier lugar.
+                </p>
+                <p class="text-gray-600 mb-6">
+                    Ofrecemos una amplia gama de cursos impartidos por instructores expertos de la industria para ayudarte a alcanzar tus metas personales y profesionales. Únete a nuestra comunidad global de estudiantes y comienza a aprender hoy mismo.
+                </p>
+                <a href="#" class="text-dorado font-bold hover:underline">Conoce más sobre nuestra historia</a>
+            </div>
+            <div>
+                <img src="https://placehold.co/600x400/A78BFA/FFFFFF?text=Nuestro+Equipo" alt="Equipo de Cursify" class="rounded-lg shadow-md w-full h-auto">
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="bg-azul-oscuro border-t border-gray-700 mt-16">
+    <div class="container mx-auto px-6 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+                <h4 class="font-bold text-lg mb-4 text-white">SkillUP</h4>
+                <ul>
+                    <li class="mb-2"><a href="#" class="hover:text-dorado">Sobre nosotros</a></li>
+                    <li class="mb-2"><a href="#" class="hover:text-dorado">Blog</a></li>
+                    <li class="mb-2"><a href="#" class="hover:text-dorado">Carreras</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-lg mb-4 text-white">Soporte</h4>
+                <ul>
+                    <li class="mb-2"><a href="#" class="hover:text-dorado">Contacto</a></li>
+                    <li class="mb-2"><a href="#" class="hover:text-dorado">FAQ</a></li>
+                    <li class="mb-2"><a href="#" class="hover:text-dorado">Ayuda y Soporte</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-lg mb-4 text-white">Legal</h4>
+                <ul>
+                    <li class="mb-2"><a href="#" class="hover:text-dorado">Términos</a></li>
+                    <li class="mb-2"><a href="#" class="hover:text-dorado">Política de Privacidad</a></li>
+                </ul>
+            </div>
+             <div>
+                <h4 class="font-bold text-lg mb-4 text-white">Conecta</h4>
+                <div class="flex space-x-4">
+                    <a href="#" class="hover:text-dorado">Facebook</a>
+                    <a href="#" class="hover:text-dorado">Twitter</a>
+                    <a href="#" class="hover:text-dorado">LinkedIn</a>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400 text-sm">
+            &copy; 2026 SkillUP. Todos los derechos reservados.
+        </div>
+    </div>
+</footer>

@@ -1,0 +1,179 @@
+
+<app-docente-header></app-docente-header>
+
+
+<a href=""></a>
+
+<!-- Layout principal -->
+<div class="container-fluid">
+  <div class="row">
+
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-lg-2 sidebar d-md-block p-3">
+      <h5 class="fw-bold mb-4">Panel Docente</h5>
+      <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+        <button class="nav-link active" id="v-pills-cursos-tab" data-bs-toggle="pill" data-bs-target="#v-pills-cursos" type="button" role="tab">📚 Cursos Dictados</button>
+        <button class="nav-link" id="v-pills-comunicacion-tab" data-bs-toggle="pill" data-bs-target="#v-pills-comunicacion" type="button" role="tab">💬 Comunicación</button>
+        <button class="nav-link" id="v-pills-rendimiento-tab" data-bs-toggle="pill" data-bs-target="#v-pills-rendimiento" type="button" role="tab">📊 Rendimiento</button>
+      </div>
+    </nav>
+
+    <!-- Contenido -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+      <div class="tab-content" id="v-pills-tabContent">
+
+        <!-- Cursos Dictados -->
+        <div class="tab-pane fade show active" id="v-pills-cursos" role="tabpanel" aria-labelledby="v-pills-cursos-tab">
+          <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white fw-bold text-center">
+              <h2><strong>Crear Nuevo Curso</strong></h2>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-center mb-3">
+                  <img src="img/curso/curso.png" width="200" height="200" class="img-fluid" alt="Imagen del curso">
+                </div>
+              <form class="row g-3" (ngSubmit)="registrarCurso()" #formCurso="ngForm">
+
+  <!-- ID del docente (solo lectura) 
+  <input type="number"
+         class="form-control"
+         id="iddocente"
+         name="iddocente"
+         [(ngModel)]="nuevoCurso.idDocente"
+         readonly>
+-->
+  <div class="col-md-6">
+    <label class="form-label fw-semibold">Nombre del Curso</label>
+    <input type="text" class="form-control"
+           name="nombreCurso"
+           [(ngModel)]="nuevoCurso.nombreCurso"
+           placeholder="Ej: Electricidad Básica" required>
+  </div>
+
+  <div class="col-md-6">
+    <label class="form-label fw-semibold">Nivel</label>
+    <select class="form-select"
+            name="nivel"
+            [(ngModel)]="nuevoCurso.nivel" required>
+      <option value="">Seleccionar nivel...</option>
+      <option>Básico</option>
+      <option>Intermedio</option>
+      <option>Avanzado</option>
+    </select>
+  </div>
+
+ <div class="col-md-6">
+  <label class="form-label fw-semibold">Categoría</label>
+  <select class="form-select"
+          name="idCategoria"
+          [(ngModel)]="nuevoCurso.idCategoria"
+          required>
+    <option *ngFor="let categoria of categorias" [value]="categoria.id">
+      {{ categoria.nombre }}
+    </option>
+  </select>
+</div>
+
+  <div class="col-md-6">
+    <label class="form-label fw-semibold">Duración (minutos)</label>
+    <input type="number" class="form-control"
+           name="duracionMin"
+           [(ngModel)]="nuevoCurso.duracionMin"
+           placeholder="Ej: 120" required>
+  </div>
+
+  <div class="col-md-12">
+    <label class="form-label fw-semibold">Descripción</label>
+    <textarea class="form-control"
+              name="descripcion"
+              [(ngModel)]="nuevoCurso.descripcion"
+              rows="3" placeholder="Describe los objetivos y temario del curso..." required></textarea>
+  </div>
+
+  <div class="col-md-12">
+    <label class="form-label fw-semibold">Resumen</label>
+    <textarea class="form-control"
+              name="resumen"
+              [(ngModel)]="nuevoCurso.resumen"
+              rows="2" placeholder="Breve resumen del curso..." required></textarea>
+  </div>
+
+<div class="col-md-12">
+  <label class="form-label fw-semibold">Imágenes del Curso</label>
+
+  <div class="d-flex gap-2">
+
+    <!-- Imagen Principal -->
+    <div class="flex-fill">
+      <input 
+        class="form-control"
+        type="file"
+        accept="image/*"
+        (change)="onFileSelected($event, 1)"
+        required>
+      
+      <small *ngIf="nuevoCurso.imagenCurso1" class="text-success">
+        Imagen principal: <strong>{{ nuevoCurso.imagenCurso1 }}</strong>
+      </small>
+    </div>
+
+    <!-- Imagen Secundaria -->
+    <div class="flex-fill">
+      <input 
+        class="form-control"
+        type="file"
+        accept="image/*"
+        (change)="onFileSelected($event, 2)">
+      
+      <small *ngIf="nuevoCurso.imagenCurso2" class="text-success">
+        Imagen secundaria: <strong>{{ nuevoCurso.imagenCurso2 }}</strong>
+      </small>
+    </div>
+
+  </div>
+</div>
+
+
+  <!--  
+  <div class="col-md-12">
+    <label class="form-label fw-semibold">Imágenes del Curso</label>
+    <div class="d-flex gap-2">
+      <input type="text" class="form-control"
+             name="imagenCurso1"
+             [(ngModel)]="nuevoCurso.imagenCurso1"
+             placeholder="Ruta o URL de la imagen principal" required>
+
+      <input type="text" class="form-control"
+             name="imagenCurso2"
+             [(ngModel)]="nuevoCurso.imagenCurso2"
+             placeholder="Ruta o URL de la imagen secundaria">
+    </div>
+  </div>-->
+
+  <div class="col-12 d-flex justify-content-end gap-3 mt-3">
+    <button type="submit" class="btn btn-success px-4">Guardar Curso</button>
+    <button type="reset" class="btn btn-secondary px-4">Limpiar</button>
+  </div>
+</form>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Comunicación -->
+        <div class="tab-pane fade" id="v-pills-comunicacion" role="tabpanel" aria-labelledby="v-pills-comunicacion-tab">
+          <h5>Sección de Comunicación</h5>
+        </div>
+
+        <!-- Rendimiento -->
+        <div class="tab-pane fade" id="v-pills-rendimiento" role="tabpanel" aria-labelledby="v-pills-rendimiento-tab">
+          <h5>Panel de Rendimiento</h5>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+
+

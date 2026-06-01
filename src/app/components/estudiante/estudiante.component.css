@@ -1,0 +1,11 @@
+.course-card img {
+      height: 160px;
+      object-fit: cover;
+    }
+    .progress-bar {
+      background-color: #6610f2;
+    }
+    .section-title {
+      font-weight: 600;
+      margin: 20px 0 10px;
+    }

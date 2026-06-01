@@ -1,0 +1,172 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" href="#">SkillUP</a>
+    <form class="d-flex w-50">
+      <input class="form-control me-2" type="search" placeholder="Buscar cursos" aria-label="Search">
+    </form>
+    <div>
+      
+      <button type="button" class="btn btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#configModal">
+        <i class="bi bi-gear-fill"></i> Configuración
+      </button>
+      
+      <a href="#" class="btn btn-outline-dark">
+        <i class="bi bi-person-fill"></i> {{ primerNombre }}
+      </a>
+      
+      <button (click)="onLogout()" class="btn btn-outline-danger ms-2">
+         <i class="bi bi-box-arrow-right"></i> Salir
+      </button>
+    </div>
+  </div>
+</nav>
+
+<section class="container pt-4">
+  <div class="row align-items-center">
+    <div class="col-md-8">
+      <h5>Hola de nuevo, <span class="fw-bold">{{ currentUser?.nombreCompleto }}</span></h5>
+      <p class="text-muted">Continúa aprendiendo y mejora tus habilidades técnicas.</p>
+
+    </div>
+  </div>
+</section>
+
+<section class="container">
+    <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill"></i> {{ successMessage }}
+        <button type="button" class="btn-close" (click)="successMessage = null" aria-label="Close"></button>
+    </div>
+    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i> {{ errorMessage }}
+        <button type="button" class="btn-close" (click)="errorMessage = null" aria-label="Close"></button>
+    </div>
+</section>
+
+<section class="container py-4">
+  <h4 class="section-title">Mis Cursos</h4>
+  <p class="text-muted">Aquí aparecerán tus cursos inscritos.</p>
+  </section>
+
+
+<div class="modal fade" id="configModal" tabindex="-1" aria-labelledby="configModalLabel" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="configModalLabel">Configuración de la Cuenta</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <form *ngIf="profileData" (ngSubmit)="onUpdateProfile()">
+        
+        <div class="modal-body">
+          <ul class="nav nav-tabs" id="configTabs" role="tablist">
+             <li class="nav-item" role="presentation">
+               <button class="nav-link active" id="perfil-tab" data-bs-toggle="tab" data-bs-target="#perfil" type="button" role="tab" aria-controls="perfil" aria-selected="true">
+                  <i class="bi bi-person-vcard"></i> Editar Perfil
+               </button>
+            </li>
+            <li class="nav-item" role="presentation">
+               <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab" aria-controls="password" aria-selected="false">
+                  <i class="bi bi-key"></i> Cambiar Contraseña
+               </button>
+            </li>
+            <li class="nav-item" role="presentation">
+               <button class="nav-link" id="danger-tab" data-bs-toggle="tab" data-bs-target="#danger" type="button" role="tab" aria-controls="danger" aria-selected="false">
+                  <i class="bi bi-exclamation-triangle"></i> Zona de Peligro
+               </button>
+            </li>
+          </ul>
+
+          <div class="tab-content pt-3" id="configTabsContent">
+            
+            <div class="tab-pane fade show active" id="perfil" role="tabpanel" aria-labelledby="perfil-tab">
+              <h6 class="mb-3">Información Personal</h6>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="nombres" class="form-label">Nombres</label>
+                  <input type="text" class="form-control" id="nombres" name="nombres" [(ngModel)]="profileData.nombres" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="apellidos" class="form-label">Apellidos</label>
+                  <input type="text" class="form-control" id="apellidos" name="apellidos" [(ngModel)]="profileData.apellidos" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento</label>
+                  <input type="date" class="form-control" id="fechaNacimiento" name="fechaNacimiento" [(ngModel)]="profileData.fechaDeNacimiento">
+                </div>
+                <div class="col-md-6">
+                  <label for="genero" class="form-label">Género</label>
+                  <select id="genero" name="genero" class="form-select" [(ngModel)]="profileData.genero">
+                    <option value="Masculino">Masculino</option>
+                    <option value="Femenino">Femenino</option>
+                    <option value="Otro">Otro</option>
+                    <option value="">Prefiero no decir</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
+                <h6 class="mb-3">Actualizar Contraseña</h6>
+                <p class="text-muted small">Esta función requiere un endpoint en el backend (Próximo paso).</p>
+                <div class="mb-3">
+                    <label for="nuevaPassword" class="form-label">Nueva Contraseña</label>
+                    <input type="password" class="form-control" id="nuevaPassword" name="nuevaPassword" autocomplete="new-password">
+                </div>
+                <div class="mb-3">
+                    <label for="confirmarPassword" class="form-label">Confirmar Nueva Contraseña</label>
+                    <input type="password" class="form-control" id="confirmarPassword" name="confirmarPassword" autocomplete="new-password">
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="danger" role="tabpanel" aria-labelledby="danger-tab">
+                 <div class="p-3 border border-danger rounded">
+                    <h5 class="text-danger">Dar de baja la cuenta</h5>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteConfirmModal">
+                      Solicitar baja de mi cuenta
+                    </button>
+                 </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="deleteConfirmModalLabel">¿Estás absolutamente seguro?</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <form (ngSubmit)="onDeleteAccount()">
+          <div class="modal-body">
+            <p>Esta acción <strong>no se puede deshacer</strong>.</p>
+            <p>Para confirmar, escribe tu nombre de usuario (<strong>{{ currentUser?.username }}</strong>) abajo.</p>
+            
+            <input type="text" class="form-control" name="confirmDeleteInput" 
+                   placeholder="Escribe tu nombre de usuario" 
+                   [(ngModel)]="confirmUsername" 
+                   autocomplete="off">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            
+            <button type="submit" class="btn btn-danger" 
+                    [disabled]="confirmUsername !== currentUser?.username">
+                Entiendo, dar de baja mi cuenta
+            </button>
+          </div>
+      </form>
+      
+    </div>
+  </div>
+</div>

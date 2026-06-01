@@ -1,0 +1,21 @@
+<h1>LISTADO DE DOCENTES</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Id_docente</th>
+            <th>Nombre</th>
+            <th>ACCION</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let docente of docentesC">
+            <td>{{docente.idDocente}}</td>
+            <td>{{docente.nombres}}</td>
+            <td>
+                <button class="btn btn-warning" (click)="ingresarDocente(docente.idDocente)">
+          INGRESAR CON DOCENTE
+        </button>
+            </td>
+        </tr>
+    </tbody>
+</table>
