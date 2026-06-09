@@ -6,8 +6,9 @@ import { Injectable } from '@angular/core';
 export class DocenteSessionService {
 
   private keyNombre = 'nombreDelDocente';
+  private keyIdDocente = 'idDocente';
 
-  setNombreDocente(nombre: string) {
+  setNombreDocente(nombre: string): void {
     localStorage.setItem(this.keyNombre, nombre);
   }
 
@@ -15,7 +16,19 @@ export class DocenteSessionService {
     return localStorage.getItem(this.keyNombre) || '';
   }
 
-  clearNombreDocente() {
+  setIdDocente(id: number): void {
+    if (id && id > 0) {
+      localStorage.setItem(this.keyIdDocente, id.toString());
+    }
+  }
+
+  getIdDocente(): number {
+    const id = localStorage.getItem(this.keyIdDocente);
+    return id ? Number(id) : 0;
+  }
+
+  clearNombreDocente(): void {
     localStorage.removeItem(this.keyNombre);
+    localStorage.removeItem(this.keyIdDocente);
   }
 }
