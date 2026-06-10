@@ -186,7 +186,9 @@
             </div>
 
             <!-- Dashboard 5: Detalle -->
-            <div *ngIf="dashboardActivo === 5 && !cargandoDatos" class="mt-4">
+            <div *ngIf="dashboardActivo === 5 && !cargandoDatos && hayDatosReales" class="mt-4">
+
+              
 
               <!-- Tarjetas de resumen ejecutivo -->
               <div class="row g-3 mb-4">
@@ -280,7 +282,7 @@
                               <small class="text-muted">({{ item.totalResenas }} reseñas)</small>
                             </div>
                           </td>
-                        </tr>
+                        <tr>
                       </tbody>
                     </table>
                   </div>
@@ -312,6 +314,18 @@
                       <canvas id="graficoDistribucion" style="max-height: 300px; width: 100%;"></canvas>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mensaje cuando NO hay datos -->
+            <div *ngIf="dashboardActivo === 5 && !cargandoDatos && !hayDatosReales" class="text-center py-5 mt-4">
+              <div class="card shadow-sm border-0">
+                <div class="card-body p-5">
+                  <i class="bi bi-database-x fs-1 text-muted"></i>
+                  <h4 class="text-muted mt-3">No hay datos disponibles</h4>
+                  <p class="text-muted">No se encontraron cursos, matrículas o certificados para este docente.</p>
+                  <p class="text-muted small">Ejecuta el script de inserción en la base de datos para cargar datos de prueba.</p>
                 </div>
               </div>
             </div>
