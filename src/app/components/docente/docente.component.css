@@ -39,9 +39,16 @@ body {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Estilos críticos para el canvas principal */
 canvas {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 300px;
   max-height: 400px;
-  width: 100%;
+}
+
+.card-body {
+  min-height: 450px;
 }
 
 .btn-group .btn.active {
@@ -95,4 +102,11 @@ canvas {
 .card.border-0.shadow-sm:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Contenedor del gráfico */
+.grafico-container {
+  width: 100%;
+  min-height: 400px;
+  position: relative;
 }
