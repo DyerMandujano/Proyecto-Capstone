@@ -1,198 +1,176 @@
-<div class="container-fluid">
-  <div class="row">
-    <!-- Sidebar con Currículo -->
-    <nav class="col-md-3 col-lg-2 curriculum-sidebar">
-      <div class="position-sticky pt-3">
-        <h6 class="px-3">Contenido del Curso</h6>
-        <div class="accordion" id="curriculumAccordion">
-          @for (seccion of secciones; track seccion.idSeccion; let i = $index) {
-            <div class="accordion-item">
-              <h2 class="accordion-header" [id]="'heading' + seccion.idSeccion">
-                <button 
-                  class="accordion-button" 
-                  type="button" 
-                  [class.collapsed]="!isSectionExpanded(seccion.idSeccion)"
-                  (click)="toggleSection(seccion.idSeccion)">
-                  {{ seccion.nombreSeccion }}
-                </button>
-              </h2>
-              <div 
-                [id]="'collapse' + seccion.idSeccion" 
-                class="accordion-collapse" 
-                [class.collapse]="!isSectionExpanded(seccion.idSeccion)"
-                [class.show]="isSectionExpanded(seccion.idSeccion)">
-                <div class="accordion-body">
-                  @for (leccion of leccionesPorSeccion[seccion.idSeccion]; track leccion.idLeccion) {
+<div class="container-fluid bg-dark text-light min-vh-100 p-4">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-white fw-bold" *ngIf="curso">{{ curso.nombreCurso }}</h2>
+    <button class="btn btn-primary px-4" (click)="regresarCursos()">
+      <i class="bi bi-arrow-left-short"></i> Regresar a Cursos
+    </button>
+  </div>
+
+  <div class="row g-4">
+    
+    <div class="col-lg-4 col-md-5">
+      <div class="card bg-secondary text-white border-0 shadow-sm p-3 rounded-3">
+        <h5 class="fw-bold mb-3 border-b pb-2"><i class="bi bi-journal-bookmark-fill me-2"></i>Contenido del Curso</h5>
+        
+        @for (seccion of secciones; track seccion.idSeccion) {
+          <div class="mb-3 border-bottom border-dark pb-2">
+            
+            <div 
+              class="d-flex justify-content-between align-items-center p-2 rounded bg-opacity-10 bg-white" 
+              style="cursor: pointer;" 
+              (click)="toggleSection(seccion.idSeccion)">
+              <span class="fw-semibold text-white-50">{{ seccion.nombreSeccion }}</span>
+              <i class="bi" [ngClass]="isSectionExpanded(seccion.idSeccion) ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+            </div>
+
+            @if (isSectionExpanded(seccion.idSeccion)) {
+              <ul class="list-unstyled mt-2 ps-2">
+                @for (leccion of getLeccionesBySeccion(seccion.idSeccion); track leccion.idLeccion) {
+                  <li class="mb-2 p-2 rounded" [ngClass]="{'bg-primary bg-opacity-25 border-start border-primary border-3': currentLesson?.idLeccion === leccion.idLeccion}">
+                    
                     <div 
-                      class="lesson-item mb-2" 
-                      [class.active]="currentLesson?.idLeccion === leccion.idLeccion">
-                      
-                      <div 
-                        class="lesson-title lesson-link" 
-                        (click)="seleccionarLeccion(leccion, seccion)">
+                      class="d-flex justify-content-between align-items-center" 
+                      style="cursor: pointer;" 
+                      (click)="seleccionarLeccion(leccion, seccion)">
+                      <span class="text-white small fw-medium">
+                        <i class="bi me-2" [ngClass]="isLessonCompleted(leccion.idLeccion) ? 'bi-check-circle-fill text-success' : 'bi-play-circle'"></i>
                         {{ leccion.nombreLeccion }}
-                      </div>
-                      
-                      <button 
-                        class="btn btn-sm btn-outline-primary resources-btn" 
-                        type="button"
-                        (click)="toggleResources(leccion.idLeccion)">
-                        Recursos
-                      </button>
-                      
-                      @if (areResourcesExpanded(leccion.idLeccion)) {
-                        <div class="mt-2">
-                          <ul class="list-unstyled ms-3">
-                            @if (leccion.material1) {
-                              <li>
+                      </span>
+                    </div>
+
+                    @if (leccion.materiales && leccion.materiales.length > 0) {
+                      <div class="mt-2 text-start">
+                        <button 
+                          class="btn btn-sm btn-outline-light py-0 px-2" 
+                          style="font-size: 0.75rem;" 
+                          (click)="$event.stopPropagation(); toggleResources(leccion.idLeccion)">
+                          <i class="bi bi-folder2-open me-1"></i> Recursos
+                        </button>
+                        
+                        @if (areResourcesExpanded(leccion.idLeccion)) {
+                          <ul class="list-unstyled ps-3 mt-2 mb-0 border-start border-secondary" style="font-size: 0.85rem;">
+                            @for (material of leccion.materiales; track material.idMaterial) {
+                              <li class="my-1">
                                 <a 
-                                  [href]="leccion.material1" 
-                                  class="text-decoration-none resource-link"
-                                  target="_blank">
-                                  Material 1
-                                </a>
-                              </li>
-                            }
-                            @if (leccion.material2) {
-                              <li>
-                                <a 
-                                  [href]="leccion.material2" 
-                                  class="text-decoration-none resource-link"
-                                  target="_blank">
-                                  Material 2
+                                  (click)="$event.stopPropagation(); verMaterialEnPantalla(material.urlMaterial)" 
+                                  class="text-info text-decoration-none d-block text-truncate" 
+                                  style="cursor: pointer;"
+                                  title="Ver {{ material.nombreArchivo }}">
+                                  <i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i>
+                                  {{ material.nombreArchivo || 'Documento de apoyo' }}
                                 </a>
                               </li>
                             }
                           </ul>
-                        </div>
-                      }
-                    </div>
-                  }
-                </div>
-              </div>
-            </div>
-          }
-        </div>
-      </div>
-    </nav>
+                        }
+                      </div>
+                    }
 
-    <!-- Main Content -->
-    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                  </li>
+                } @empty {
+                  <li class="text-muted small ps-2">No hay lecciones en esta sección.</li>
+                }
+              </ul>
+            }
 
-      <div class="row mb-3">
-        <div class="col-12 text-end">
-          <button class="btn btn-primary" (click)="regresarCursos()">
-            Regresar a Cursos
-          </button>
-        </div>
-      </div>
-      <!-- Progreso del Curso -->
-      @if (curso) {
-        <div class="progress-section mb-4">
-          <h4>Tu Progreso</h4>
-          <div class="progress mb-2">
-            <div 
-              class="progress-bar" 
-              role="progressbar" 
-              [style.width]="getProgressPercentage() + '%'"
-              [attr.aria-valuenow]="getProgressPercentage()" 
-              aria-valuemin="0" 
-              aria-valuemax="100">
-              {{ getProgressPercentage().toFixed(2) }}% Completado
-            </div>
           </div>
-          <small>{{ getProgressText() }}</small>
-        </div>
-      }
-
-      <!-- Video de la Lección -->
-<!-- Video de la Lección -->
-        @if (currentLesson) {
-        <div class="lesson-video mb-4">
-            <h5>{{ currentLesson.nombreLeccion }}</h5>
-            
-           <div class="video-container">
-              <iframe width="100%"
-        height="600"
-         src="https://www.youtube.com/embed/9I09LRj73Rk?si=KKGdLeF-JG2rxib3" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-            </div>
-
-            <div class="video-controls mt-2">
-            <button class="btn btn-sm btn-outline-success" (click)="marcarComoCompletada()">
-                <i class="fas fa-check me-1"></i>Marcar como completada
-            </button>
-            </div>
-        </div>
+        } @empty {
+          <p class="text-muted small text-center my-3">Este curso aún no tiene secciones registradas.</p>
         }
 
-      <!-- Barra de Navegación con Tabs -->
-      <ul class="nav nav-tabs mb-4" id="lessonTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab">Descripción General</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#qa" type="button" role="tab">Preguntas y Respuestas</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#notes" type="button" role="tab">Notas</button>
-        </li>
-      </ul>
+      </div>
+    </div>
 
-      <!-- Contenido de los Tabs -->
-      <div class="tab-content" id="lessonTabsContent">
-        <div class="tab-pane fade show active" id="general" role="tabpanel">
-          <div class="lesson-description">
-            <h6>Descripción del Curso</h6>
-            @if (curso) {
-              <p>{{ curso.descripcion }}</p>
-            }
-            
-            <h6 class="mt-3">Información de la Lección</h6>
-            @if (currentLesson) {
-              <p>
-                Duración: {{ currentLesson.duracion }} minutos
-              </p>
-            }
+    <div class="col-lg-8 col-md-7">
+      
+      <div class="card bg-secondary text-white border-0 shadow-sm p-3 mb-4 rounded-3">
+        <h6 class="fw-semibold mb-2">Tu Progreso</h6>
+        <div class="progress bg-dark mb-2" style="height: 12px; border-radius: 6px;">
+          <div 
+            class="progress-bar bg-warning progress-bar-striped progress-bar-animated text-dark fw-bold text-center" 
+            role="progressbar" 
+            [style.width.%]="getProgressPercentage()"
+            style="font-size: 0.7rem; transition: width 0.5s ease;">
+            {{ getProgressPercentage() | number:'1.0-0' }}% Completado
           </div>
         </div>
-        
-        <div class="tab-pane fade" id="qa" role="tabpanel">
-          <div class="qa-section">
-            <h6>Preguntas y Respuestas</h6>
-            <p>Aquí puedes hacer preguntas sobre la lección o ver respuestas de otros estudiantes.</p>
-            <textarea class="form-control mb-2" rows="3" placeholder="Haz una pregunta..."></textarea>
-            <button class="btn btn-primary">Enviar Pregunta</button>
-          </div>
-        </div>
-        
-        <div class="tab-pane fade" id="notes" role="tabpanel">
-          <div class="student-notes">
-            <h6>Tus Notas</h6>
-            <textarea class="form-control" rows="4" placeholder="Escribe tus notas aquí..."></textarea>
-            <button class="btn btn-outline-primary mt-2">Guardar Notas</button>
-          </div>
-        </div>
+        <small class="text-white-50">{{ getProgressText() }}</small>
       </div>
 
-      <!-- Controles de Navegación -->
-      <div class="lesson-controls d-flex justify-content-between mt-4">
-  <button class="btn btn-secondary" (click)="anteriorLeccion()">Anterior</button>
+      <div class="card bg-secondary text-white border-0 shadow-sm rounded-3 overflow-hidden">
+        
+        <div class="card-header bg-dark border-0 p-3 d-flex justify-content-between align-items-center">
+          <h5 class="mb-0 fw-bold text-truncate text-warning" *ngIf="currentLesson">
+            {{ currentLesson.nombreLeccion }}
+          </h5>
+          
+          <button 
+            *ngIf="vistaActiva === 'material'" 
+            class="btn btn-sm btn-primary px-3" 
+            (click)="volverAlVideo()">
+            <i class="bi bi-camera-video-fill me-1"></i> Volver al Video
+          </button>
+        </div>
 
-  <!-- Si NO es la última lección -->
-  @if (!esUltimaLeccion()) {
-    <button class="btn btn-primary" (click)="siguienteLeccion()">
-      Siguiente Lección
-    </button>
-  }
+        <div class="card-body p-0 bg-dark" style="min-height: 500px; position: relative;">
+          
+          @if (vistaActiva === 'video') {
+            @if (currentLesson && currentLesson.urlVideo) {
+              <div class="ratio ratio-16x9">
+                <iframe 
+                  [src]="currentLesson.urlVideo | safeUrl" 
+                  title="Reproductor de clase" 
+                  frameborder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                  allowfullscreen>
+                </iframe>
+              </div>
+            } @else {
+              <div class="d-flex flex-column justify-content-center align-items-center text-center p-5 position-absolute top-50 start-50 translate-middle w-100">
+                <i class="bi bi-play-btn text-white-50" style="font-size: 4rem;"></i>
+                <p class="text-white-50 mt-3 fs-5">Selecciona una lección en el panel izquierdo para comenzar a estudiar.</p>
+              </div>
+            }
+          }
 
-  <!-- Si ES la última lección -->
-  @if (esUltimaLeccion()) {
-    <button class="btn btn-success" (click)="irAEvaluacion()">
-      Dar Cuestionario
-    </button>
-  }
+          @if (vistaActiva === 'material') {
+            @if (materialSeleccionadoUrl) {
+              <div class="w-100" style="height: 600px;">
+                <iframe 
+                  [src]="materialSeleccionadoUrl" 
+                  width="100%" 
+                  height="100%" 
+                  style="border: none; background: #ffffff;">
+                  Tu navegador no soporta la previsualización interna de este documento.
+                </iframe>
+              </div>
+            } @else {
+              <div class="d-flex justify-content-center align-items-center h-100 p-5 text-muted">
+                No se pudo cargar el recurso solicitado de forma interna.
+              </div>
+            }
+          }
 
-</div>
-    </main>
+        </div>
+
+        <div class="card-footer bg-dark border-0 p-3 d-flex justify-content-between">
+          <button class="btn btn-outline-light px-3" (click)="anteriorLeccion()" [disabled]="!currentLesson">
+            <i class="bi bi-chevron-left"></i> Anterior
+          </button>
+          
+          <button class="btn btn-success px-4" *ngIf="esUltimaLeccion()" (click)="irAEvaluacion()">
+            <i class="bi bi-journal-check me-1"></i> Rendir Evaluación Final
+          </button>
+          
+          <button class="btn btn-outline-light px-3" *ngIf="!esUltimaLeccion()" (click)="siguienteLeccion()" [disabled]="!currentLesson">
+            Siguiente <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
   </div>
 </div>

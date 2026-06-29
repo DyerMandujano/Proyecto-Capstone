@@ -13,7 +13,7 @@ import { LoginResponse } from '../../../models/login-response.model';
 import { EstudianteService } from '../../../services/estudiante.service';
 import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';
-import { CursoService } from '../../../services/curso.service'; // <--- ¡¡AQUÍ ESTÁ LA CLAVE!!
+import { CursoService } from '../../../services/curso.service';
 
 declare var bootstrap: any;
 
@@ -26,12 +26,10 @@ declare var bootstrap: any;
 })
 export class VisualizarCursosComponent implements OnInit {
 
-  // Propiedades para los cursos
   idEstudiante!: number;
-  cursos: CursoMatricula[] = []; // Cursos Matriculados
-  cursosNoM: CursoNoMatricula[] = []; // Cursos No Matriculados
+  cursos: CursoMatricula[] = [];
+  cursosNoM: CursoNoMatricula[] = [];
 
-  // Propiedades para el Perfil y Modal
   currentUser: LoginResponse | null = null;
   profileData: Persona | null = null;
   successMessage: string | null = null;
@@ -45,7 +43,7 @@ export class VisualizarCursosComponent implements OnInit {
     private router: Router,
     private authService: AuthService,
     private usuarioService: UsuarioService,
-    private cursoService: CursoService, // <--- ¡¡INYECTA EL SERVICIO DE CURSO!!
+    private cursoService: CursoService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -54,7 +52,6 @@ export class VisualizarCursosComponent implements OnInit {
       return this.currentUser.nombreCompleto.split(' ')[0];
     }
     return '...';
-    
   }
 
   ngOnInit(): void {
@@ -66,26 +63,23 @@ export class VisualizarCursosComponent implements OnInit {
       return;
     }
 
-    // Carga los datos del perfil (para el modal)
     this.loadProfileData(this.currentUser.idPersona);
 
-    // Carga los cursos (usando el ID de la URL)
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
         this.idEstudiante = +id;
         
-        //GUARDADO EN EL LOCALSTORAGE
-        localStorage.setItem('idEstudiante', this.idEstudiante.toString());
-        // Carga los cursos en los que SÍ está matriculado
-        this.obtenerCursosPorEstudiante(this.idEstudiante);
+        // 🔹 CORRECCIÓN: Protegemos localStorage con isPlatformBrowser
+        if (isPlatformBrowser(this.platformId)) {
+          localStorage.setItem('idEstudiante', this.idEstudiante.toString());
+        }
         
-        // Carga los cursos en los que NO está matriculado
+        this.obtenerCursosPorEstudiante(this.idEstudiante);
         this.obtenerCursosSinMatricula(this.idEstudiante);
       }
     });
 
-    // Prepara el modal de Bootstrap
     if (isPlatformBrowser(this.platformId)) {
       const modalElement = document.getElementById('configModal');
       if (modalElement) {
@@ -94,43 +88,33 @@ export class VisualizarCursosComponent implements OnInit {
     }
   }
 
-  // Este método usa EstudianteService (¡Correcto!)
   obtenerCursosPorEstudiante(id: number): void {
     this.estudianteService.obtenerCursosMatricula(id).subscribe({
-      next: (data) => {
-        this.cursos = data;
-      },
-      error: (err) => {
-        console.error('Error al obtener los cursos del estudiante:', err);
-      }
+      next: (data) => { this.cursos = data; },
+      error: (err) => { console.error('Error al obtener los cursos:', err); }
     });
   }
 
   obtenerCursosSinMatricula(id: number): void {
     this.cursoService.listarCursosSinMatriculaporEstu(id).subscribe({
-      next: (data) => {
-        this.cursosNoM = data;
-        console.log('Cursos del estudiante:', data);
-      },
-      error: (err) => {
-        console.error('Error al obtener los cursos del estudiante:', err);
-      }
+      next: (data) => { this.cursosNoM = data; },
+      error: (err) => { console.error('Error al obtener los cursos:', err); }
     });
   }
 
+  irAMisCertificados(): void {
+    // 🔹 CORRECCIÓN: Protegemos el acceso a localStorage
+    let idEstudiante = 0;
+    if (isPlatformBrowser(this.platformId)) {
+       idEstudiante = Number(localStorage.getItem('idEstudiante'));
+    }
 
-    irAMisCertificados(): void {
-  const idEstudiante = Number(localStorage.getItem('idEstudiante'));
-
-  if (!idEstudiante) {
-    console.error("No existe idEstudiante en el localStorage");
-    return;
+    if (!idEstudiante) {
+      console.error("No existe idEstudiante en el almacenamiento");
+      return;
+    }
+    this.router.navigate(['/certificados/estudiante', idEstudiante]);
   }
-
-  this.router.navigate(['/certificados/estudiante', idEstudiante]);
-}
-
-  // --- Métodos para el Perfil (traídos de estudiante.component.ts) ---
 
   loadProfileData(idPersona: number): void {
     this.usuarioService.obtenerPerfil(idPersona).subscribe(
@@ -140,29 +124,24 @@ export class VisualizarCursosComponent implements OnInit {
           this.profileData.fechaDeNacimiento = new Date(this.profileData.fechaDeNacimiento).toISOString().split('T')[0];
         }
       },
-      (err: any) => { 
-        this.errorMessage = 'Error al cargar los datos de tu perfil.';
-      }
+      (err: any) => { this.errorMessage = 'Error al cargar tu perfil.'; }
     );
   }
 
   onUpdateProfile(): void {
     if (!this.profileData) return;
-
     this.usuarioService.actualizarPerfil(this.profileData.idPersona, this.profileData).subscribe(
       (response: string) => { 
         this.successMessage = response; 
         this.errorMessage = null;
-        if (this.configModal) {
-          this.configModal.hide(); 
-        }
+        if (this.configModal) this.configModal.hide(); 
         if(this.currentUser) {
             this.currentUser.nombreCompleto = `${this.profileData?.nombres} ${this.profileData?.apellidos}`;
             this.authService.saveSession(this.currentUser); 
         }
       },
       (err: any) => { 
-        this.errorMessage = err.error?.message || 'Error al actualizar el perfil.';
+        this.errorMessage = err.error?.message || 'Error al actualizar.';
         this.successMessage = null;
       }
     );
@@ -170,15 +149,14 @@ export class VisualizarCursosComponent implements OnInit {
 
   onLogout(): void {
     this.authService.logout();
-    this.router.navigate(['/']); // Redirige a la Home al salir
+    this.router.navigate(['/']);
   }
   
   onDeleteAccount(): void {
       if (this.confirmUsername !== this.currentUser?.username) {
-          this.errorMessage = "El nombre de usuario no coincide.";
+          this.errorMessage = "El usuario no coincide.";
           return;
       }
-      console.log("Enviando solicitud para eliminar cuenta...");
-      alert('Funcionalidad de eliminar cuenta aún no conectada al backend.');
+      alert('Funcionalidad pendiente de conexión.');
   }
 }

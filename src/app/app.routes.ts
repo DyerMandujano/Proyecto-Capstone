@@ -17,7 +17,7 @@ import { VisualizarCursosComponent } from './components/estudiante/visualizar-cu
 // Asegúrate de que estos componentes existan (si te da error, verifica la ruta)
 import { CursoDescripcionComponent } from './components/curso-descripcion/curso-descripcion.component'; 
 import { CursoDetalleComponent } from './components/curso-detalle/curso-detalle.component';
-import { authGuard } from './guards/auth.guard';
+import { AuthGuard } from './guards/auth.guard';
 
 // --- ¡IMPORTANTE! Importar el Home ---
 import { HomeComponent } from './components/home/home.component';
@@ -35,7 +35,7 @@ export const routes: Routes = [
   {
     path: 'visualizar-cursos/:id',
     component: VisualizarCursosComponent,
-    canActivate: [authGuard] // Recomendado protegerla
+    canActivate: [AuthGuard] // Recomendado protegerla
   },
 
   // Rutas de detalle de curso (Nuevas del merge)
@@ -46,7 +46,7 @@ export const routes: Routes = [
   {
     path: 'curso/:id/lecciones',
     component: CursoDetalleComponent,
-    canActivate: [authGuard] // Recomendado protegerla
+    canActivate: [AuthGuard] // Recomendado protegerla
   },
 
   // Rutas de autenticación
@@ -113,7 +113,7 @@ export const routes: Routes = [
   {
     path: 'estudiante/dashboard',
     component: EstudianteComponent,
-    canActivate: [authGuard]
+    canActivate: [AuthGuard]
   },
 
   // 2. CORRECCIÓN: Ruta comodín redirige a Home ('') en lugar de Login

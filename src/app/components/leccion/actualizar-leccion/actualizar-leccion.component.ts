@@ -1,64 +1,113 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Leccion } from '../../../models/leccion.model';
-import { ActivatedRoute, Router } from '@angular/router';
 import { LeccionService } from '../../../services/leccion.service';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DocenteHeaderComponent } from '../../docente-header/docente-header.component';
+import { SafeUrlPipe } from '../../../pipes/safe-url.pipe';
 
 @Component({
   selector: 'app-actualizar-leccion',
-  imports: [CommonModule, FormsModule,DocenteHeaderComponent],
+  standalone: true,
+  imports: [CommonModule, FormsModule, DocenteHeaderComponent, SafeUrlPipe],
   templateUrl: './actualizar-leccion.component.html',
   styleUrl: './actualizar-leccion.component.css'
 })
-export class ActualizarLeccionComponent implements OnInit{
-
-  idLeccion!:number;
+export class ActualizarLeccionComponent implements OnInit {
+  
   leccion: Leccion = {
-      idLeccion:0,
-      idSeccion:0,
-      nombreLeccion:'',
-      duracion:0,
-      material1:'',
-      material2:'',
-      ordenLeccion:0,
-      estado:1
-    } 
+    idLeccion: 0,
+    idSeccion: 0,
+    nombreLeccion: '',
+    duracion: 0,
+    ordenLeccion: 0,
+    estado: 1,
+    urlVideo: '',
+    materiales: []
+  };
 
-
-   constructor(private route: ActivatedRoute,
-    private leccionService: LeccionService,
-    private router: Router) {}
+  constructor(
+    private leccionService: LeccionService, 
+    private route: ActivatedRoute,
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
   ngOnInit(): void {
-    this.idLeccion = Number(this.route.snapshot.paramMap.get('id'));
-    console.log('🟢 ID de leccion recibido:', this.idLeccion);
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.leccionService.obtenerLeccionPorId(Number(id)).subscribe({
+        next: (data: Leccion) => {
+          if (data) {
+            this.leccion = data;
+            if (!this.leccion.materiales) {
+              this.leccion.materiales = [];
+            }
+          }
+        },
+        error: (err: any) => console.error('Error al cargar la lección:', err)
+      });
+    }
+  }
 
-    // 🔹 Obtener leccion por ID al cargar la página
-    this.leccionService.obtenerLeccionPorId(this.idLeccion).subscribe({
-      next: (data) => {
-        this.leccion = data;
-        console.log('📘 Datos de leccion cargados:', data);
-      },
-      error: (err) => {
-        console.error('❌ Error al obtener leccion:', err);
-        alert('No se pudo cargar la información de leccion.');
+  // 🔹 LA FUNCIÓN RECUPERADA: Captura el archivo desde la PC
+  seleccionarArchivo(event: any, index: number): void {
+    const file = event.target.files[0];
+    if (file) {
+      if (this.leccion.materiales) {
+        this.leccion.materiales[index].archivoFisico = file;
+        
+        // Autocompleta el nombre si está vacío
+        if (!this.leccion.materiales[index].nombreArchivo) {
+          this.leccion.materiales[index].nombreArchivo = file.name;
+        }
       }
-    });
+    }
   }
 
   actualizarSeccion(): void {
-    this.leccionService.actualizarLeccion(this.idLeccion, this.leccion).subscribe({
-      next: (mensaje) => {
-        alert(mensaje);
-        this.router.navigate(['leccion/seccion', this.leccion.idSeccion]);
+    this.leccionService.actualizarLeccion(this.leccion.idLeccion, this.leccion).subscribe({
+      next: (res: any) => {
+        alert('✅ Lección y materiales actualizados correctamente');
+        this.regresarALista(); // Redirección segura
       },
-      error: (err) => {
-        console.error(err);
-        alert('❌ Error al actualizar la Leccion');
+      error: (err: any) => {
+        console.error('Error al actualizar:', err);
+        alert('❌ Ocurrió un error al actualizar la lección');
       }
     });
   }
-  
+
+  // 🔹 Cancelar acción
+  cancelar(): void {
+    this.regresarALista();
+  }
+
+// 🔹 Redirección a prueba de fallos (Ruta Corregida)
+  private regresarALista(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const idSeccionGuardado = localStorage.getItem('idSeccionActual');
+      if (idSeccionGuardado && idSeccionGuardado !== '0') {
+        // 🔥 AQUÍ ESTÁ LA CORRECCIÓN: Ahora coincide con la URL de tu captura
+        this.router.navigate([`/leccion/seccion/${idSeccionGuardado}`]);
+        return;
+      }
+    }
+    // Fallback de emergencia
+    this.router.navigate(['/']);
+  }
+
+  agregarMaterial(): void {
+    if (!this.leccion.materiales) {
+      this.leccion.materiales = [];
+    }
+    this.leccion.materiales.push({ urlMaterial: '', nombreArchivo: '' });
+  }
+
+  quitarMaterial(index: number): void {
+    if (this.leccion.materiales) {
+      this.leccion.materiales.splice(index, 1);
+    }
+  }
 }

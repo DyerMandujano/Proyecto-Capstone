@@ -28,9 +28,24 @@ export class LeccionService {
     return this.http.post(`${this.apiUrl}`, leccion, { responseType: 'text' });
   }
 
-  // 🔹 Actualizar lección existente
+  // 🔹 Actualizar lección existente (MODIFICADO PARA SUBIR ARCHIVOS FÍSICOS)
   actualizarLeccion(id: number, leccion: Leccion): Observable<string> {
-    return this.http.put(`${this.apiUrl}/leccion/${id}`, leccion, { responseType: 'text' });
+    const formData = new FormData();
+    
+    // 1. Convertimos los datos de la lección (texto) a un Blob tipo JSON
+    formData.append('leccion', new Blob([JSON.stringify(leccion)], { type: 'application/json' }));
+
+    // 2. Revisamos si hay archivos seleccionados desde la computadora y los adjuntamos
+    if (leccion.materiales) {
+      leccion.materiales.forEach((material) => {
+        if (material.archivoFisico) {
+          formData.append('archivos', material.archivoFisico, material.archivoFisico.name);
+        }
+      });
+    }
+
+    // 3. Enviamos el "paquete" (FormData) por PUT en lugar de mandar el objeto directo
+    return this.http.put(`${this.apiUrl}/leccion/${id}`, formData, { responseType: 'text' });
   }
 
   // 🔹 Eliminar (cambiar estado) de una lección por ID

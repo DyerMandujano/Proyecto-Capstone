@@ -16,6 +16,6 @@ export class DocenteHeaderComponent implements OnInit {
   constructor(private docenteSessionService: DocenteSessionService) {}
 
   ngOnInit(): void {
-    this.nombreDelDocente = this.docenteSessionService.getNombreDocente();
+    this.nombreDelDocente = this.docenteSessionService.getNombreDocente() || '';
   }
 }

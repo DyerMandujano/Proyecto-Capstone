@@ -63,20 +63,34 @@
                           placeholder="Ej: 2" required>
                 </div>
 
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold">Material 1</label>
-                  <input type="text" class="form-control" 
-                  name="material1"
-                  [(ngModel)]="nuevaLeccion.material1"
-                  required>
+                <div class="col-md-12 mt-3 p-3 border rounded bg-light">
+                  <label class="form-label fw-bold mb-3">Recursos y Materiales (Opcional)</label>
+                  
+                  <div *ngFor="let material of nuevaLeccion.materiales; let i = index" class="row mb-2 align-items-center">
+                    <div class="col-md-5">
+                      <input type="text" class="form-control" placeholder="Nombre (Ej: Manual PDF)" [(ngModel)]="nuevaLeccion.materiales[i].nombreArchivo" name="nombreArchivo{{i}}">
+                    </div>
+                    <div class="col-md-6">
+                      <input type="text" class="form-control" placeholder="Link del archivo (Google Drive, etc.)" [(ngModel)]="nuevaLeccion.materiales[i].urlMaterial" name="urlMaterial{{i}}">
+                    </div>
+                    <div class="col-md-1">
+                      <button type="button" class="btn btn-danger w-100" (click)="quitarMaterial(i)" title="Eliminar material">X</button>
+                    </div>
+                  </div>
+
+                  <button type="button" class="btn btn-outline-primary btn-sm mt-2" (click)="agregarMaterial()">
+                    ➕ Añadir Material
+                  </button>
                 </div>
 
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold">Material 2</label>
-                  <input type="text" class="form-control" 
-                  name="material2"
-                  [(ngModel)]="nuevaLeccion.material2"
-                  required>
+                <div class="col-md-12">
+                  <label for="urlVideo" class="form-label fw-semibold">Link del Video</label>
+                  <input type="text" 
+                        class="form-control" 
+                        id="urlVideo" 
+                        name="urlVideo" 
+                        [(ngModel)]="nuevaLeccion.urlVideo" 
+                        placeholder="Ej: https://www.youtube.com/watch?v=...">
                 </div>
 
                 <div class="col-12 d-flex justify-content-end gap-3 mt-3">

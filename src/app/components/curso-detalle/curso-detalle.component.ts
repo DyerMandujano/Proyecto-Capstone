@@ -7,12 +7,17 @@ import { LeccionService } from '../../services/leccion.service';
 import { Curso } from '../../models/curso.model';
 import { Seccion } from '../../models/seccion.model';
 import { Leccion } from '../../models/leccion.model';
+import { SafeUrlPipe } from '../../pipes/safe-url.pipe';
+
+// 🔹 NUEVAS IMPORTACIONES PARA INCRUSTAR DOCUMENTOS DE FORMA SEGURA
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-curso-detalle',
+  standalone: true,
+  imports: [CommonModule, SafeUrlPipe],
   templateUrl: './curso-detalle.component.html',
   styleUrls: ['./curso-detalle.component.css'],
-  imports: [CommonModule]
 })
 export class CursoDetalleComponent implements OnInit {
   curso: Curso | null = null;
@@ -23,29 +28,32 @@ export class CursoDetalleComponent implements OnInit {
   cursoId!: number;
   cargando: boolean = true;
   error: string = '';
-  isBrowser: boolean; // Variable para saber si estamos en el navegador
+  isBrowser: boolean; 
   
   // Estado para acordeones y progreso
   expandedSections: { [key: number]: boolean } = {};
   expandedResources: { [key: number]: boolean } = {};
   completedLessons: Set<number> = new Set();
 
-  
+  // 🔹 VARIABLES PARA EL INTERRUPTOR DE VISTA (Video vs Material)
+  vistaActiva: 'video' | 'material' = 'video';
+  materialSeleccionadoUrl: SafeResourceUrl | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private cursoService: CursoService,
     private seccionService: SeccionService,
     private leccionService: LeccionService,
-    @Inject(PLATFORM_ID) private platformId: Object // Inyectamos el ID de la plataforma
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private sanitizer: DomSanitizer // 🔹 INYECTAMOS EL SANITIZER
   ) {
-    this.isBrowser = isPlatformBrowser(this.platformId); // Verificamos si es navegador
+    this.isBrowser = isPlatformBrowser(this.platformId); 
   }
 
   ngOnInit() {
     this.cursoId = +this.route.snapshot.paramMap.get('id')!;
     
-    // ✅ CORRECCIÓN: Solo accedemos a localStorage si estamos en el navegador (isBrowser)
     if (this.isBrowser && this.cursoId) {
       localStorage.setItem('cursoId', this.cursoId.toString());
       console.log('💾 Curso ID guardado en localStorage:', this.cursoId);
@@ -70,7 +78,6 @@ export class CursoDetalleComponent implements OnInit {
   }
 
   regresarCursos(): void {
-    // Si no estamos en el navegador, no hacemos nada con localStorage
     if (!this.isBrowser) return;
 
     const idEstudianteLS = localStorage.getItem('idEstudiante');
@@ -81,11 +88,7 @@ export class CursoDetalleComponent implements OnInit {
     }
 
     const idEstudiante = +idEstudianteLS;
-
-    // 🔥 BORRAR valores guardados al salir
     localStorage.removeItem('cursoId');
-    
-    // Redirige a visualizar-cursos/:id
     this.router.navigate([`/visualizar-cursos/${idEstudiante}`]);
   }
 
@@ -116,12 +119,10 @@ export class CursoDetalleComponent implements OnInit {
           this.leccionesPorSeccion[seccion.idSeccion] = lecciones.sort((a, b) => a.ordenLeccion - b.ordenLeccion);
           seccionesCargadas++;
           
-          // Expandir la primera sección por defecto
           if (seccion.ordenSeccion === 1) {
             this.expandedSections[seccion.idSeccion] = true;
           }
           
-          // Seleccionar la primera lección de la primera sección
           if (seccion.ordenSeccion === 1 && lecciones.length > 0 && !this.currentLesson) {
             this.seleccionarLeccion(lecciones[0], seccion);
           }
@@ -145,14 +146,14 @@ export class CursoDetalleComponent implements OnInit {
     this.currentLesson = leccion;
     this.currentSeccion = seccion;
     
-    // Marcar como completada si es nueva
+    // 🔹 Forzamos a que siempre vuelva a mostrar el video al cambiar de lección
+    this.volverAlVideo();
+    
     if (!this.completedLessons.has(leccion.idLeccion)) {
-      // Aquí podrías llamar a un servicio para guardar el progreso
       this.completedLessons.add(leccion.idLeccion);
     }
   }
 
-  // Retorna true si la lección actual es la última del curso
   esUltimaLeccion(): boolean {
     if (!this.currentLesson || !this.secciones || !this.leccionesPorSeccion) {
       return false;
@@ -168,12 +169,7 @@ export class CursoDetalleComponent implements OnInit {
     const ultimaLeccion = leccionesUltimaSeccion[leccionesUltimaSeccion.length - 1];
 
     return this.currentLesson.idLeccion === ultimaLeccion.idLeccion;
-}
-
-
-
-
-  //
+  }
 
   toggleSection(sectionId: number): void {
     this.expandedSections[sectionId] = !this.expandedSections[sectionId];
@@ -209,10 +205,8 @@ export class CursoDetalleComponent implements OnInit {
       const currentIndex = currentSeccionLecciones.findIndex(l => l.idLeccion === this.currentLesson!.idLeccion);
       
       if (currentIndex < currentSeccionLecciones.length - 1) {
-        // Siguiente lección en la misma sección
         this.seleccionarLeccion(currentSeccionLecciones[currentIndex + 1], this.currentSeccion);
       } else {
-        // Buscar siguiente sección
         const currentSeccionIndex = this.secciones.findIndex(s => s.idSeccion === this.currentSeccion!.idSeccion);
         if (currentSeccionIndex < this.secciones.length - 1) {
           const nextSeccion = this.secciones[currentSeccionIndex + 1];
@@ -232,10 +226,8 @@ export class CursoDetalleComponent implements OnInit {
       const currentIndex = currentSeccionLecciones.findIndex(l => l.idLeccion === this.currentLesson!.idLeccion);
       
       if (currentIndex > 0) {
-        // Lección anterior en la misma sección
         this.seleccionarLeccion(currentSeccionLecciones[currentIndex - 1], this.currentSeccion);
       } else {
-        // Buscar sección anterior
         const currentSeccionIndex = this.secciones.findIndex(s => s.idSeccion === this.currentSeccion!.idSeccion);
         if (currentSeccionIndex > 0) {
           const prevSeccion = this.secciones[currentSeccionIndex - 1];
@@ -263,29 +255,37 @@ export class CursoDetalleComponent implements OnInit {
     }
   }
 
-    // Agrega este método a tu clase
   getVideoUrl(leccionId: number): string {
-    // Mapeo manual de lecciones a videos
     const videoMap: { [key: number]: string } = {
       1: 'https://www.sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4',
       2: 'https://www.sample-videos.com/video123/mp4/480/big_buck_bunny_480p_1mb.mp4',
       3: 'https://www.sample-videos.com/video123/mp4/360/big_buck_bunny_360p_1mb.mp4',
-      // Agrega más lecciones según necesites
     };
     
     return videoMap[leccionId] || 'https://www.sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4';
   }
 
   irAEvaluacion(): void {
-  if (!this.currentSeccion) {
-    console.error("❌ No hay sección actual seleccionada.");
-    return;
+    if (!this.currentSeccion) {
+      console.error("❌ No hay sección actual seleccionada.");
+      return;
+    }
+
+    const idSeccion = this.currentSeccion.idSeccion;
+    this.router.navigate(['/evaluacion/seccion', idSeccion]);
   }
 
-  const idSeccion = this.currentSeccion.idSeccion;
+// 🔹 MÉTODOS NUEVOS PARA MANEJAR EL VISOR DE DOCUMENTOS
+  verMaterialEnPantalla(urlRuta: string | undefined): void {
+    if (!urlRuta) return; // Si el material no tiene URL, ignoramos el clic
+    
+    const urlCompleta = 'http://localhost:8888/' + urlRuta;
+    this.materialSeleccionadoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(urlCompleta);
+    this.vistaActiva = 'material'; 
+  }
 
-  this.router.navigate(['/evaluacion/seccion', idSeccion]);
-}
-
-
+  volverAlVideo(): void {
+    this.vistaActiva = 'video';
+    this.materialSeleccionadoUrl = null;
+  }
 }

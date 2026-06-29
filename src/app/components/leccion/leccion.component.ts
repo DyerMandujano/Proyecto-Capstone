@@ -1,40 +1,69 @@
-import { Component, OnInit } from '@angular/core';
-import { Leccion } from '../../models/leccion.model';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Leccion } from '../../models/leccion.model';
 import { LeccionService } from '../../services/leccion.service';
-import { CommonModule } from '@angular/common';
 import { DocenteHeaderComponent } from '../docente-header/docente-header.component';
 
 @Component({
   selector: 'app-leccion',
-  imports: [CommonModule,DocenteHeaderComponent],
+  standalone: true,
+  imports: [CommonModule, DocenteHeaderComponent],
   templateUrl: './leccion.component.html',
   styleUrl: './leccion.component.css'
 })
-export class LeccionComponent implements OnInit{
+export class LeccionComponent implements OnInit {
 
   idSeccion!: number;
   idCurso!: number;
-
-
   lecciones: Leccion[] = [];
+  leccionSeleccionada!: Leccion;
 
-  constructor(private route: ActivatedRoute,
-              private leccionService: LeccionService,
-              private router: Router
+  constructor(
+    private route: ActivatedRoute,
+    private leccionService: LeccionService,
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
-  ngOnInit(): void {
+ngOnInit(): void {
+    this.inicializarLeccion();
     this.idSeccion = Number(this.route.snapshot.paramMap.get('id'));
-    console.log('ID seccion recibido:', this.idSeccion);    
     
-     const idCursoGuardado = localStorage.getItem('idCursoActual');
-    if (idCursoGuardado) {
-      this.idCurso = +idCursoGuardado;
+    if (isPlatformBrowser(this.platformId)) {
+      // 🔹 NUEVO: Guardamos el ID de la sección actual para que los hijos sepan a dónde volver
+      localStorage.setItem('idSeccionActual', this.idSeccion.toString());
+      
+      const idCursoGuardado = localStorage.getItem('idCursoActual');
+      if (idCursoGuardado) {
+        this.idCurso = +idCursoGuardado;
+      }
     }
 
-    this.leccionService.listarLeccionesPorSeccion(this.idSeccion)
-    .subscribe(data => (this.lecciones = data));
+    this.cargarLecciones();
+  }
+
+  cargarLecciones(): void {
+    if (this.idSeccion) {
+      this.leccionService.listarLeccionesPorSeccion(this.idSeccion)
+        .subscribe({
+          next: (data: Leccion[]) => this.lecciones = data,
+          error: (err: any) => console.error('Error al cargar lecciones', err)
+        });
+    }
+  }
+
+  inicializarLeccion(): void {
+    this.leccionSeleccionada = {
+      idLeccion: 0,
+      idSeccion: 0,
+      nombreLeccion: '',
+      duracion: 0,
+      ordenLeccion: 0,
+      estado: 1,
+      urlVideo: '',
+      materiales: [] 
+    };
   }
 
   navegarRegistrarLeccion(): void {
@@ -50,24 +79,21 @@ export class LeccionComponent implements OnInit{
       this.router.navigate([`/seccion/curso/${this.idCurso}`]);
     } else {
       console.error('No se encontró el idCurso');
+      this.router.navigate(['/panel-docente']); 
     }
   }
 
   eliminarLeccion(idLeccion: number): void {
-  if (confirm('¿Estás seguro de eliminar esta Leccion?')) {
-    this.leccionService.eliminarLeccion(idLeccion).subscribe({
-      next: (respuesta) => {
-       
-        // Volvemos a cargar la lista actualizada
-        this.leccionService.listarLeccionesPorSeccion(this.idSeccion)
-            .subscribe(data => this.lecciones = data);
-      },
-      error: (err) => {
-        console.error('Error al eliminar leccion:', err);
-        alert('❌ No se pudo eliminar leccion');
-      }
-    });
+    if (confirm('¿Estás seguro de eliminar esta Leccion?')) {
+      this.leccionService.eliminarLeccion(idLeccion).subscribe({
+        next: (respuesta: any) => {
+          this.cargarLecciones();
+        },
+        error: (err: any) => {
+          console.error('Error al eliminar leccion:', err);
+          alert('❌ No se pudo eliminar la leccion');
+        }
+      });
+    }
   }
-}
-
 }

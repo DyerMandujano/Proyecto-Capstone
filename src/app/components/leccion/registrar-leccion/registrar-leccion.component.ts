@@ -21,10 +21,10 @@ export class RegistrarLeccionComponent implements OnInit {
     idSeccion:0,
     nombreLeccion:'',
     duracion:0,
-    material1:'',
-    material2:'',
     ordenLeccion:0,
-    estado:1
+    estado:1,
+    urlVideo: '',
+    materiales: []
   }
 
     constructor(private route: ActivatedRoute,
@@ -56,5 +56,12 @@ registrarSeccion() {
     });
   }
 
+  // 🔹 Agrega estos dos métodos dentro de la clase:
+  agregarMaterial() {
+    this.nuevaLeccion.materiales.push({ urlMaterial: '', nombreArchivo: '' });
+  }
 
+  quitarMaterial(index: number) {
+    this.nuevaLeccion.materiales.splice(index, 1);
+  }
 }

@@ -1,12 +1,9 @@
-
 <app-docente-header></app-docente-header>
 <a href=""></a>
 
-<!-- Layout principal -->
 <div class="container-fluid">
   <div class="row">
 
-    <!-- Sidebar -->
     <nav class="col-md-3 col-lg-2 sidebar d-md-block p-3">
       <h5 class="fw-bold mb-4">Panel Docente</h5>
       <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
@@ -16,29 +13,20 @@
       </div>
     </nav>
 
-    <!-- Contenido -->
     <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
       <div class="tab-content" id="v-pills-tabContent">
 
-        <!-- Cursos Dictados -->
         <div class="tab-pane fade show active" id="v-pills-cursos" role="tabpanel" aria-labelledby="v-pills-cursos-tab">
           <div class="card shadow-sm border-0">
             <div class="card-header bg-primary text-white fw-bold text-center">
               <h2><strong>Actualizar Leccion</strong></h2>
             </div>
             <div class="card-body">
-                <div class="d-flex justify-content-center mb-3">
-        <img src="img/seccion/updSeccion.png" width="200" height="200" class="img-fluid mb-3" alt="Imagen del curso">
-      </div>
-              <form class="row g-3" class="row g-3" (ngSubmit)="actualizarSeccion()" *ngIf="leccion.idLeccion">
-
-                <!-- 
-                <input type="number"
-                    class="form-control"
-                    id="idseccion"
-                    name="idseccion"
-                    [(ngModel)]="leccion.idSeccion"
-                    readonly> -->
+              <div class="d-flex justify-content-center mb-3">
+                <img src="img/seccion/updSeccion.png" width="200" height="200" class="img-fluid mb-3" alt="Imagen del curso">
+              </div>
+              
+              <form class="row g-3" (ngSubmit)="actualizarSeccion()" *ngIf="leccion.idLeccion">
 
                 <div class="col-md-4">
                   <label class="form-label fw-semibold">Nombre Leccion</label>
@@ -65,20 +53,30 @@
                           placeholder="Ej: 2" required>
                 </div>
 
-                <div class="col-md-4">
-                  <label class="form-label fw-semibold">Material 1</label>
-                  <input type="text" class="form-control" 
-                  name="material1"
-                  [(ngModel)]="leccion.material1"
-                  required>
-                </div>
+                <div class="col-md-12 mt-3 p-3 border rounded bg-light">
+                  <label class="form-label fw-bold mb-3">Recursos y Materiales (Subir Archivos)</label>
+                  
+                  <div *ngFor="let material of leccion.materiales; let i = index" class="row mb-2 align-items-center">
+                    <div class="col-md-5">
+                      <input type="text" class="form-control" placeholder="Nombre (Ej: Manual PDF)" [(ngModel)]="leccion.materiales[i].nombreArchivo" name="nombreArchivo{{i}}">
+                    </div>
+                    
+                    <div class="col-md-6">
+                      <input type="file" class="form-control" (change)="seleccionarArchivo($event, i)" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg">
+                      
+                      <small class="text-success" *ngIf="material.urlMaterial && !material.archivoFisico">
+                        Archivo actual guardado en el servidor.
+                      </small>
+                    </div>
+                    
+                    <div class="col-md-1">
+                      <button type="button" class="btn btn-danger w-100" (click)="quitarMaterial(i)" title="Quitar material">X</button>
+                    </div>
+                  </div>
 
-                <div class="col-md-4">
-                  <label class="form-label fw-semibold">Material 2</label>
-                  <input type="text" class="form-control" 
-                  name="material2"
-                  [(ngModel)]="leccion.material2"
-                  required>
+                  <button type="button" class="btn btn-outline-primary btn-sm mt-2" (click)="agregarMaterial()">
+                    ➕ Añadir Material
+                  </button>
                 </div>
 
                 <div class="col-md-4">
@@ -92,9 +90,35 @@
                   </select>
                 </div>
 
+                <div class="form-group mb-3">
+                  <label for="urlVideo" class="form-label">Link del Video</label>
+                  <input 
+                    type="text" 
+                    id="urlVideo" 
+                    name="urlVideo" 
+                    [(ngModel)]="leccion.urlVideo" 
+                    class="form-control" 
+                  >
+                </div>
+
+                <div class="mb-4 p-3 border rounded bg-light" *ngIf="leccion.urlVideo">
+                  <label class="fw-bold mb-2">Vista previa del video:</label>
+                  <div class="video-container d-flex justify-content-center">
+                    <iframe 
+                      width="100%" 
+                      height="315" 
+                      [src]="leccion.urlVideo | safeUrl" 
+                      title="Vista previa"
+                      frameborder="0" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                      allowfullscreen>
+                    </iframe>
+                  </div>
+                </div>
+
                 <div class="col-12 d-flex justify-content-end gap-3 mt-3">
+                  <button type="button" class="btn btn-secondary px-4" (click)="cancelar()">Cancelar</button>
                   <button type="submit" class="btn btn-success px-4">Actualizar Leccion</button>
-                  <button type="reset" class="btn btn-secondary px-4">Cancelar</button>
                 </div>
 
               </form>
@@ -102,12 +126,10 @@
           </div>
         </div>
 
-        <!-- Comunicación -->
         <div class="tab-pane fade" id="v-pills-comunicacion" role="tabpanel" aria-labelledby="v-pills-comunicacion-tab">
           <h5>Sección de Comunicación</h5>
         </div>
 
-        <!-- Rendimiento -->
         <div class="tab-pane fade" id="v-pills-rendimiento" role="tabpanel" aria-labelledby="v-pills-rendimiento-tab">
           <h5>Panel de Rendimiento</h5>
         </div>
