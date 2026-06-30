@@ -23,6 +23,12 @@ import { DocenteSessionService } from '../../services/docente-session.service';
 import { DocenteDashboardService } from '../../services/docente-dashboard.service';
 import Chart from 'chart.js/auto';
 
+// Paleta de colores compartida para todos los gráficos
+const COLORES_GRAFICOS = [
+  '#4caf50', '#ff9800', '#2196f3', '#9c27b0',
+  '#f44336', '#3f51b5', '#00bcd4', '#ff5722'
+];
+
 @Component({
   selector: 'app-docente',
   standalone: true,
@@ -46,6 +52,10 @@ export class DocenteComponent implements OnInit, AfterViewInit {
   filtroCurso: string = 'todos';
   cursosNombre: string[] = [];
 
+  // Controla qué filtros aplican al dashboard activo (para el HTML)
+  filtroAnioDeshabilitado: boolean = false;
+  filtroCursoDeshabilitado: boolean = false;
+
   private chartEvolucion: Chart | null = null;
   private chartDistribucion: Chart | null = null;
 
@@ -61,12 +71,19 @@ export class DocenteComponent implements OnInit, AfterViewInit {
   configModal: any;
   private reseñas: any[] = [];
 
-  // Datos almacenados
+  // Datos originales del backend (nunca se modifican al filtrar)
   private datosCertificados: any[] = [];
   private datosRanking: any[] = [];
   private datosTendenciaCert: any[] = [];
   private datosTendenciaMat: any[] = [];
   private datosEstudiantes: any[] = [];
+
+  // Copias de trabajo (resultado del filtro activo)
+  private datosCertificadosFiltrados: any[] = [];
+  private datosRankingFiltrados: any[] = [];
+  private datosTendenciaCertFiltrados: any[] = [];
+  private datosTendenciaMatFiltrados: any[] = [];
+  private datosEstudiantesFiltrados: any[] = [];
 
   constructor(
     private docenteSessionService: DocenteSessionService,
@@ -93,9 +110,10 @@ export class DocenteComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    this.idDocente = Number(this.route.snapshot.paramMap.get('idDocente')) ||
-                     Number(this.route.snapshot.paramMap.get('id')) ||
-                     this.docenteSessionService.getIdDocente() || 0;
+    this.idDocente =
+      Number(this.route.snapshot.paramMap.get('idDocente')) ||
+      Number(this.route.snapshot.paramMap.get('id')) ||
+      this.docenteSessionService.getIdDocente() || 0;
 
     if (this.idDocente > 0) {
       this.docenteSessionService.setIdDocente(this.idDocente);
@@ -124,7 +142,36 @@ export class DocenteComponent implements OnInit, AfterViewInit {
 
   cambiarDashboard(numero: number): void {
     this.dashboardActivo = numero;
+    this.actualizarEstadoFiltros(numero);
     this.cargarDashboard(numero);
+  }
+
+  /**
+   * Habilita/deshabilita los selects de filtro según qué campos
+   * tiene disponibles el endpoint de cada dashboard.
+   *
+   * Dashboard 1 (Pie certificados): endpoint retorna {nombreCurso, cantidad} — solo curso
+   * Dashboard 2 (Ranking barras): endpoint retorna {nombreCurso, totalEstudiantes} — solo curso
+   * Dashboard 3 y 4 (Tendencias): endpoint retorna {anio, mes, cantidad} — solo año
+   * Dashboard 5 (Detalle): endpoint retorna {nombreCurso, totalEstudiantes, anio, mes} — ambos
+   */
+  private actualizarEstadoFiltros(dashboard: number): void {
+    switch (dashboard) {
+      case 1:
+      case 2:
+        this.filtroAnioDeshabilitado = true;
+        this.filtroCursoDeshabilitado = false;
+        break;
+      case 3:
+      case 4:
+        this.filtroAnioDeshabilitado = false;
+        this.filtroCursoDeshabilitado = true;
+        break;
+      case 5:
+        this.filtroAnioDeshabilitado = false;
+        this.filtroCursoDeshabilitado = false;
+        break;
+    }
   }
 
   private destruirGrafico(): void {
@@ -192,6 +239,7 @@ export class DocenteComponent implements OnInit, AfterViewInit {
   cargarDashboard(numero: number): void {
     this.destruirGrafico();
     this.destruirGraficosAdicionales();
+    this.actualizarEstadoFiltros(numero);
 
     this.cargandoDatos = true;
     this.hayDatosReales = false;
@@ -201,9 +249,11 @@ export class DocenteComponent implements OnInit, AfterViewInit {
         this.dashboardService.getCertificadosPorCurso(this.idDocente).subscribe({
           next: (data) => {
             this.cargandoDatos = false;
-            const datosNormalizados = this.normalizarDatos(data, 'certificados');
-            if (datosNormalizados.length > 0 && datosNormalizados[0].cantidad > 0) {
-              this.datosCertificados = datosNormalizados;
+            const norm = this.normalizarDatos(data, 'certificados');
+            if (norm.length > 0 && norm[0].cantidad > 0) {
+              this.datosCertificados = norm;
+              this.datosCertificadosFiltrados = [...norm];
+              this.cursosNombre = norm.map((d: any) => d.nombreCurso);
               this.hayDatosReales = true;
               this.mostrarGraficoPie();
             } else {
@@ -211,20 +261,23 @@ export class DocenteComponent implements OnInit, AfterViewInit {
               this.mostrarMensajeSinDatos('No hay certificados emitidos para este docente');
             }
           },
-          error: (err) => {
+          error: () => {
             this.cargandoDatos = false;
             this.limpiarCanvas();
             this.mostrarMensajeSinDatos('Error al cargar certificados');
           }
         });
         break;
+
       case 2:
         this.dashboardService.getRankingCursos(this.idDocente).subscribe({
           next: (data) => {
             this.cargandoDatos = false;
-            const datosNormalizados = this.normalizarDatos(data, 'ranking');
-            if (datosNormalizados.length > 0 && datosNormalizados[0].totalEstudiantes > 0) {
-              this.datosRanking = datosNormalizados;
+            const norm = this.normalizarDatos(data, 'ranking');
+            if (norm.length > 0 && norm[0].totalEstudiantes > 0) {
+              this.datosRanking = norm;
+              this.datosRankingFiltrados = [...norm];
+              this.cursosNombre = norm.map((d: any) => d.nombreCurso);
               this.hayDatosReales = true;
               this.mostrarGraficoBarras();
             } else {
@@ -232,20 +285,22 @@ export class DocenteComponent implements OnInit, AfterViewInit {
               this.mostrarMensajeSinDatos('No hay estudiantes matriculados en tus cursos');
             }
           },
-          error: (err) => {
+          error: () => {
             this.cargandoDatos = false;
             this.limpiarCanvas();
             this.mostrarMensajeSinDatos('Error al cargar ranking');
           }
         });
         break;
+
       case 3:
         this.dashboardService.getTendenciaCertificados(this.idDocente).subscribe({
           next: (data) => {
             this.cargandoDatos = false;
-            const datosNormalizados = this.normalizarDatos(data, 'tendencia');
-            if (datosNormalizados.length > 0 && datosNormalizados[0].cantidad > 0) {
-              this.datosTendenciaCert = datosNormalizados;
+            const norm = this.normalizarDatos(data, 'tendencia');
+            if (norm.length > 0 && norm[0].cantidad > 0) {
+              this.datosTendenciaCert = norm;
+              this.datosTendenciaCertFiltrados = [...norm];
               this.hayDatosReales = true;
               this.mostrarGraficoLineaCertificados();
             } else {
@@ -253,20 +308,22 @@ export class DocenteComponent implements OnInit, AfterViewInit {
               this.mostrarMensajeSinDatos('No hay tendencia de certificados para mostrar');
             }
           },
-          error: (err) => {
+          error: () => {
             this.cargandoDatos = false;
             this.limpiarCanvas();
             this.mostrarMensajeSinDatos('Error al cargar tendencia');
           }
         });
         break;
+
       case 4:
         this.dashboardService.getTendenciaMatriculas(this.idDocente).subscribe({
           next: (data) => {
             this.cargandoDatos = false;
-            const datosNormalizados = this.normalizarDatos(data, 'tendencia');
-            if (datosNormalizados.length > 0 && datosNormalizados[0].cantidad > 0) {
-              this.datosTendenciaMat = datosNormalizados;
+            const norm = this.normalizarDatos(data, 'tendencia');
+            if (norm.length > 0 && norm[0].cantidad > 0) {
+              this.datosTendenciaMat = norm;
+              this.datosTendenciaMatFiltrados = [...norm];
               this.hayDatosReales = true;
               this.mostrarGraficoLineaMatriculas();
             } else {
@@ -274,34 +331,36 @@ export class DocenteComponent implements OnInit, AfterViewInit {
               this.mostrarMensajeSinDatos('No hay tendencia de matrículas para mostrar');
             }
           },
-          error: (err) => {
+          error: () => {
             this.cargandoDatos = false;
             this.limpiarCanvas();
             this.mostrarMensajeSinDatos('Error al cargar tendencia');
           }
         });
         break;
+
       case 5:
         this.dashboardService.getEstudiantesPorCurso(this.idDocente).subscribe({
           next: (data) => {
             this.cargandoDatos = false;
-            const datosNormalizados = this.normalizarDatos(data, 'estudiantes');
-            if (datosNormalizados.length > 0 && datosNormalizados[0].totalEstudiantes > 0) {
-              this.datosEstudiantes = datosNormalizados;
+            const norm = this.normalizarDatos(data, 'estudiantes');
+            if (norm.length > 0 && norm[0].totalEstudiantes > 0) {
+              this.datosEstudiantes = norm;
+              this.datosEstudiantesFiltrados = [...norm];
               const cursosTemp: string[] = [];
-              this.datosEstudiantes.forEach((item: any) => {
+              norm.forEach((item: any) => {
                 if (!cursosTemp.includes(item.nombreCurso)) cursosTemp.push(item.nombreCurso);
               });
               this.cursosNombre = cursosTemp;
               this.hayDatosReales = true;
-              this.procesarDatosDetalle(this.datosEstudiantes);
+              this.procesarDatosDetalle(norm);
             } else {
               this.datosTablaAgrupados = [];
               this.resumenDetalle = {};
               this.mostrarMensajeSinDatos('No hay estudiantes matriculados en tus cursos');
             }
           },
-          error: (err) => {
+          error: () => {
             this.cargandoDatos = false;
             this.mostrarMensajeSinDatos('Error al cargar estudiantes');
           }
@@ -310,46 +369,91 @@ export class DocenteComponent implements OnInit, AfterViewInit {
     }
   }
 
+  // ─── GRÁFICOS ─────────────────────────────────────────────────────────────
+
   private mostrarGraficoPie(): void {
-    if (!this.canvasRef?.nativeElement || !this.datosCertificados.length) {
+    if (!this.canvasRef?.nativeElement || !this.datosCertificadosFiltrados.length) {
       this.limpiarCanvas();
       return;
     }
     this.chartInstance = new Chart(this.canvasRef.nativeElement, {
       type: 'pie',
       data: {
-        labels: this.datosCertificados.map((d: any) => d.nombreCurso),
+        labels: this.datosCertificadosFiltrados.map((d: any) => d.nombreCurso),
         datasets: [{
-          data: this.datosCertificados.map((d: any) => d.cantidad),
-          backgroundColor: ['#4caf50', '#ff9800', '#2196f3', '#9c27b0', '#f44336', '#3f51b5']
+          data: this.datosCertificadosFiltrados.map((d: any) => d.cantidad),
+          backgroundColor: COLORES_GRAFICOS,
+          borderColor: '#fff',
+          borderWidth: 2,
+          hoverOffset: 8,
         }]
       },
-      options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { position: 'bottom' },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const total = (ctx.dataset.data as number[]).reduce((a, b) => a + b, 0);
+                const pct = total > 0 ? Math.round((ctx.parsed / total) * 100) : 0;
+                return ` ${ctx.label}: ${ctx.parsed} certificados (${pct}%)`;
+              }
+            }
+          }
+        }
+      }
     });
   }
 
   private mostrarGraficoBarras(): void {
-    if (!this.canvasRef?.nativeElement || !this.datosRanking.length) {
+    if (!this.canvasRef?.nativeElement || !this.datosRankingFiltrados.length) {
       this.limpiarCanvas();
       return;
     }
+    const colores = this.datosRankingFiltrados.map((_: any, i: number) =>
+      COLORES_GRAFICOS[i % COLORES_GRAFICOS.length]
+    );
     this.chartInstance = new Chart(this.canvasRef.nativeElement, {
       type: 'bar',
       data: {
-        labels: this.datosRanking.map((d: any) => d.nombreCurso),
+        labels: this.datosRankingFiltrados.map((d: any) => d.nombreCurso),
         datasets: [{
-          label: 'Estudiantes',
-          data: this.datosRanking.map((d: any) => d.totalEstudiantes),
-          backgroundColor: '#42a5f5',
-          borderRadius: 5
+          label: 'Estudiantes matriculados',
+          data: this.datosRankingFiltrados.map((d: any) => d.totalEstudiantes),
+          backgroundColor: colores,
+          borderColor: colores,
+          borderWidth: 1,
+          borderRadius: 6,
+          borderSkipped: false,
         }]
       },
-      options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true } } }
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` ${ctx.parsed.y} estudiantes`
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0 },
+            grid: { color: '#f0f0f0' }
+          },
+          x: { grid: { display: false } }
+        }
+      }
     });
   }
 
   private mostrarGraficoLineaCertificados(): void {
-    if (!this.canvasRef?.nativeElement || !this.datosTendenciaCert.length) {
+    if (!this.canvasRef?.nativeElement || !this.datosTendenciaCertFiltrados.length) {
       this.limpiarCanvas();
       return;
     }
@@ -357,24 +461,43 @@ export class DocenteComponent implements OnInit, AfterViewInit {
     this.chartInstance = new Chart(this.canvasRef.nativeElement, {
       type: 'line',
       data: {
-        labels: this.datosTendenciaCert.map((d: any) => `${meses[d.mes - 1]} ${d.anio}`),
+        labels: this.datosTendenciaCertFiltrados.map((d: any) => `${meses[d.mes - 1]} ${d.anio}`),
         datasets: [{
           label: 'Certificados emitidos',
-          data: this.datosTendenciaCert.map((d: any) => d.cantidad),
+          data: this.datosTendenciaCertFiltrados.map((d: any) => d.cantidad),
           borderColor: '#4caf50',
-          backgroundColor: '#4caf5020',
+          backgroundColor: 'rgba(76,175,80,0.12)',
           borderWidth: 2,
-          tension: 0.3,
+          tension: 0.4,
           fill: true,
-          pointRadius: 4
+          pointRadius: 5,
+          pointBackgroundColor: '#4caf50',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
         }]
       },
-      options: { responsive: true, maintainAspectRatio: true }
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          tooltip: {
+            callbacks: { label: (ctx) => ` ${ctx.parsed.y} certificados` }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0 },
+            grid: { color: '#f0f0f0' }
+          },
+          x: { grid: { display: false } }
+        }
+      }
     });
   }
 
   private mostrarGraficoLineaMatriculas(): void {
-    if (!this.canvasRef?.nativeElement || !this.datosTendenciaMat.length) {
+    if (!this.canvasRef?.nativeElement || !this.datosTendenciaMatFiltrados.length) {
       this.limpiarCanvas();
       return;
     }
@@ -382,23 +505,41 @@ export class DocenteComponent implements OnInit, AfterViewInit {
     this.chartInstance = new Chart(this.canvasRef.nativeElement, {
       type: 'line',
       data: {
-        labels: this.datosTendenciaMat.map((d: any) => `${meses[d.mes - 1]} ${d.anio}`),
+        labels: this.datosTendenciaMatFiltrados.map((d: any) => `${meses[d.mes - 1]} ${d.anio}`),
         datasets: [{
           label: 'Matrículas',
-          data: this.datosTendenciaMat.map((d: any) => d.cantidad),
+          data: this.datosTendenciaMatFiltrados.map((d: any) => d.cantidad),
           borderColor: '#ff9800',
-          backgroundColor: '#ff980020',
+          backgroundColor: 'rgba(255,152,0,0.12)',
           borderWidth: 2,
-          tension: 0.3,
+          tension: 0.4,
           fill: true,
-          pointRadius: 4
+          pointRadius: 5,
+          pointBackgroundColor: '#ff9800',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
         }]
       },
-      options: { responsive: true, maintainAspectRatio: true }
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          tooltip: {
+            callbacks: { label: (ctx) => ` ${ctx.parsed.y} matrículas` }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0 },
+            grid: { color: '#f0f0f0' }
+          },
+          x: { grid: { display: false } }
+        }
+      }
     });
   }
 
-  // ========== GRÁFICO DE RADAR (se muestra en el canvas principal cuando dashboardActivo === 5) ==========
   private mostrarGraficoRadar(): void {
     if (!this.canvasRef?.nativeElement || !this.datosTablaAgrupados.length) {
       this.limpiarCanvas();
@@ -426,7 +567,7 @@ export class DocenteComponent implements OnInit, AfterViewInit {
         curso: curso.nombreCurso,
         total: curso.totalEstudiantes,
         crecimiento: Math.min(crecimiento, 200),
-        satisfaccion: satisfaccion
+        satisfaccion
       };
     });
 
@@ -487,56 +628,192 @@ export class DocenteComponent implements OnInit, AfterViewInit {
     });
   }
 
+  // ─── FILTROS ───────────────────────────────────────────────────────────────
+
   aplicarFiltros(): void {
-    if (this.dashboardActivo === 5 && this.datosEstudiantes.length) {
-      let datos = [...this.datosEstudiantes];
-      if (this.filtroAnio !== 'todos') {
-        datos = datos.filter((item: any) => item.anio?.toString() === this.filtroAnio);
+    this.destruirGrafico();
+
+    switch (this.dashboardActivo) {
+      case 1: {
+        // Endpoint no retorna año → solo filtro por curso
+        let datos = [...this.datosCertificados];
+        if (this.filtroCurso !== 'todos') {
+          datos = datos.filter((item: any) => item.nombreCurso === this.filtroCurso);
+        }
+        this.datosCertificadosFiltrados = datos;
+        if (datos.length > 0) {
+          this.mostrarGraficoPie();
+        } else {
+          this.limpiarCanvas();
+          this.mostrarMensajeSinDatos('No hay certificados para el curso seleccionado');
+        }
+        break;
       }
-      if (this.filtroCurso !== 'todos') {
-        datos = datos.filter((item: any) => item.nombreCurso === this.filtroCurso);
+      case 2: {
+        // Endpoint no retorna año → solo filtro por curso
+        let datos = [...this.datosRanking];
+        if (this.filtroCurso !== 'todos') {
+          datos = datos.filter((item: any) => item.nombreCurso === this.filtroCurso);
+        }
+        this.datosRankingFiltrados = datos;
+        if (datos.length > 0) {
+          this.mostrarGraficoBarras();
+        } else {
+          this.limpiarCanvas();
+          this.mostrarMensajeSinDatos('No hay datos de ranking para el curso seleccionado');
+        }
+        break;
       }
-      this.procesarDatosDetalle(datos);
+      case 3: {
+        // Endpoint solo tiene año/mes, sin curso → solo filtro por año
+        let datos = [...this.datosTendenciaCert];
+        if (this.filtroAnio !== 'todos') {
+          datos = datos.filter((item: any) => item.anio?.toString() === this.filtroAnio);
+        }
+        this.datosTendenciaCertFiltrados = datos;
+        if (datos.length > 0) {
+          this.mostrarGraficoLineaCertificados();
+        } else {
+          this.limpiarCanvas();
+          this.mostrarMensajeSinDatos('No hay tendencia de certificados para el año seleccionado');
+        }
+        break;
+      }
+      case 4: {
+        // Endpoint solo tiene año/mes, sin curso → solo filtro por año
+        let datos = [...this.datosTendenciaMat];
+        if (this.filtroAnio !== 'todos') {
+          datos = datos.filter((item: any) => item.anio?.toString() === this.filtroAnio);
+        }
+        this.datosTendenciaMatFiltrados = datos;
+        if (datos.length > 0) {
+          this.mostrarGraficoLineaMatriculas();
+        } else {
+          this.limpiarCanvas();
+          this.mostrarMensajeSinDatos('No hay tendencia de matrículas para el año seleccionado');
+        }
+        break;
+      }
+      case 5: {
+        if (!this.datosEstudiantes.length) break;
+        let datos = [...this.datosEstudiantes];
+        if (this.filtroAnio !== 'todos') {
+          datos = datos.filter((item: any) => item.anio?.toString() === this.filtroAnio);
+        }
+        if (this.filtroCurso !== 'todos') {
+          datos = datos.filter((item: any) => item.nombreCurso === this.filtroCurso);
+        }
+        this.datosEstudiantesFiltrados = datos;
+        this.procesarDatosDetalle(datos);
+        break;
+      }
     }
   }
 
   resetearFiltros(): void {
     this.filtroAnio = 'todos';
     this.filtroCurso = 'todos';
-    if (this.dashboardActivo === 5 && this.datosEstudiantes.length) {
-      this.procesarDatosDetalle(this.datosEstudiantes);
+    // Restaurar copias de trabajo sin llamar al backend
+    this.destruirGrafico();
+    this.destruirGraficosAdicionales();
+    switch (this.dashboardActivo) {
+      case 1:
+        this.datosCertificadosFiltrados = [...this.datosCertificados];
+        if (this.datosCertificadosFiltrados.length) this.mostrarGraficoPie();
+        else this.limpiarCanvas();
+        break;
+      case 2:
+        this.datosRankingFiltrados = [...this.datosRanking];
+        if (this.datosRankingFiltrados.length) this.mostrarGraficoBarras();
+        else this.limpiarCanvas();
+        break;
+      case 3:
+        this.datosTendenciaCertFiltrados = [...this.datosTendenciaCert];
+        if (this.datosTendenciaCertFiltrados.length) this.mostrarGraficoLineaCertificados();
+        else this.limpiarCanvas();
+        break;
+      case 4:
+        this.datosTendenciaMatFiltrados = [...this.datosTendenciaMat];
+        if (this.datosTendenciaMatFiltrados.length) this.mostrarGraficoLineaMatriculas();
+        else this.limpiarCanvas();
+        break;
+      case 5:
+        this.datosEstudiantesFiltrados = [...this.datosEstudiantes];
+        if (this.datosEstudiantesFiltrados.length) this.procesarDatosDetalle(this.datosEstudiantes);
+        break;
     }
   }
 
-  cargarReseñas(): void {
-    // Aquí deberías llamar a tu servicio para obtener reseñas reales
-    // Por ahora, usamos datos simulados para que la card muestre algo
-    const calificacionesPorCurso: { [key: string]: number[] } = {
-      'Gasfitería Básica': [5, 5, 4, 5, 5],
-      'Gasfitería Avanzada': [4, 5, 4, 4],
-      'Electricidad Domiciliaria': [4, 4, 5, 4],
-      'Carpintería General': [4, 3, 4, 4],
-      'Albañilería Estructural': [3, 4, 3]
-    };
+  // ─── GRÁFICOS ADICIONALES (dashboard 5) ───────────────────────────────────
 
-    const promedioPorCurso: { [key: string]: number } = {};
-    Object.keys(calificacionesPorCurso).forEach(curso => {
-      const califs = calificacionesPorCurso[curso];
-      const promedio = califs.reduce((a, b) => a + b, 0) / califs.length;
-      promedioPorCurso[curso] = parseFloat(promedio.toFixed(1));
+  private crearGraficoEvolucionAnual(datosEvolucion: any): void {
+    const canvas = document.getElementById('graficoEvolucionAnual') as HTMLCanvasElement;
+    if (!canvas) return;
+    if (this.chartEvolucion) this.chartEvolucion.destroy();
+    if (!this.datosTablaAgrupados.length) return;
+
+    const anios = ['2024', '2025', '2026'];
+    const cursos = this.datosTablaAgrupados.map((c: any) => c.nombreCurso);
+
+    this.chartEvolucion = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels: anios,
+        datasets: cursos.map((curso: string, i: number) => ({
+          label: curso,
+          data: anios.map((anio) => datosEvolucion[anio]?.[curso] || 0),
+          borderColor: COLORES_GRAFICOS[i % COLORES_GRAFICOS.length],
+          backgroundColor: 'transparent',
+          tension: 0.3,
+          fill: false,
+          pointRadius: 4,
+          pointBackgroundColor: COLORES_GRAFICOS[i % COLORES_GRAFICOS.length],
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+        })),
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: { legend: { position: 'bottom' } },
+        scales: {
+          y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f0f0f0' } },
+          x: { grid: { display: false } }
+        }
+      },
     });
-
-    this.reseñas = Object.keys(promedioPorCurso).map(curso => ({
-      nombreCurso: curso,
-      calificacionPromedio: promedioPorCurso[curso],
-      totalResenas: calificacionesPorCurso[curso].length
-    }));
   }
 
-  private obtenerCalificacionPromedioGlobal(): string {
-    if (!this.reseñas.length) return 'N/A';
-    const suma = this.reseñas.reduce((acc, r) => acc + r.calificacionPromedio, 0);
-    return (suma / this.reseñas.length).toFixed(1);
+  private crearGraficoDistribucion(): void {
+    const canvas = document.getElementById('graficoDistribucion') as HTMLCanvasElement;
+    if (!canvas) return;
+    if (this.chartDistribucion) this.chartDistribucion.destroy();
+    if (!this.datosTablaAgrupados.length) return;
+
+    this.chartDistribucion = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: this.datosTablaAgrupados.map((c: any) => c.nombreCurso),
+        datasets: [{
+          label: 'Estudiantes',
+          data: this.datosTablaAgrupados.map((c: any) => c.totalEstudiantes),
+          backgroundColor: this.datosTablaAgrupados.map((_: any, i: number) =>
+            COLORES_GRAFICOS[i % COLORES_GRAFICOS.length]
+          ),
+          borderRadius: 6,
+          borderSkipped: false,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f0f0f0' } },
+          x: { grid: { display: false } }
+        }
+      },
+    });
   }
 
   procesarDatosDetalle(datos: any[]): void {
@@ -566,7 +843,9 @@ export class DocenteComponent implements OnInit, AfterViewInit {
         (evolucionAnual[item.anio][item.nombreCurso] || 0) + item.totalEstudiantes;
     });
 
-    const totalGeneral = Object.values(agrupadoPorCurso).reduce((sum: number, curso: any) => sum + curso.totalEstudiantes, 0);
+    const totalGeneral = Object.values(agrupadoPorCurso).reduce(
+      (sum: number, curso: any) => sum + curso.totalEstudiantes, 0
+    );
 
     this.datosTablaAgrupados = Object.values(agrupadoPorCurso).map((curso: any) => {
       const porcentaje = totalGeneral > 0 ? Math.round((curso.totalEstudiantes / totalGeneral) * 100) : 0;
@@ -579,7 +858,6 @@ export class DocenteComponent implements OnInit, AfterViewInit {
         tendencia = variacion > 0 ? 'subida' : variacion < 0 ? 'bajada' : 'estable';
       }
 
-      // Obtener calificación real de las reseñas
       const reseñaCurso = this.reseñas.find(r => r.nombreCurso === curso.nombreCurso);
       const calificacion = reseñaCurso ? reseñaCurso.calificacionPromedio.toFixed(1) : 'N/A';
       const totalResenas = reseñaCurso ? reseñaCurso.totalResenas : 0;
@@ -591,7 +869,7 @@ export class DocenteComponent implements OnInit, AfterViewInit {
         variacion: Math.abs(variacion),
         esTop: porcentaje >= 25,
         calificacionPromedio: calificacion,
-        totalResenas: totalResenas
+        totalResenas
       };
     });
 
@@ -600,69 +878,21 @@ export class DocenteComponent implements OnInit, AfterViewInit {
     const totalMatriculas = datos.length;
     const estudiantesUnicos = new Set(datos.map((d: any) => `${d.nombreCurso}-${d.anio}`)).size;
     const totalCertificados = this.certificados.length;
-    const tasaAprobacion = totalMatriculas > 0 ? Math.min(Math.round((totalCertificados / totalMatriculas) * 100), 100) : 0;
+    const tasaAprobacion = totalMatriculas > 0
+      ? Math.min(Math.round((totalCertificados / totalMatriculas) * 100), 100) : 0;
 
     this.resumenDetalle = {
       totalEstudiantesUnicos: estudiantesUnicos,
-      totalMatriculas: totalMatriculas,
-      tasaAprobacion: tasaAprobacion,
+      totalMatriculas,
+      tasaAprobacion,
       promedioCalificacion: this.obtenerCalificacionPromedioGlobal(),
     };
 
     setTimeout(() => {
-      // Mostrar RADAR en el canvas principal (#miGrafico)
       this.mostrarGraficoRadar();
       this.crearGraficoEvolucionAnual(evolucionAnual);
       this.crearGraficoDistribucion();
     }, 100);
-  }
-
-  private crearGraficoEvolucionAnual(datosEvolucion: any): void {
-    const canvas = document.getElementById('graficoEvolucionAnual') as HTMLCanvasElement;
-    if (!canvas) return;
-    if (this.chartEvolucion) this.chartEvolucion.destroy();
-    if (!this.datosTablaAgrupados.length) return;
-
-    const anios = ['2024', '2025', '2026'];
-    const cursos = this.datosTablaAgrupados.map((c: any) => c.nombreCurso);
-    const colores = ['#667eea', '#4caf50', '#ff9800', '#9c27b0', '#f44336'];
-
-    this.chartEvolucion = new Chart(canvas, {
-      type: 'line',
-      data: {
-        labels: anios,
-        datasets: cursos.map((curso: string, index: number) => ({
-          label: curso,
-          data: anios.map((anio) => datosEvolucion[anio]?.[curso] || 0),
-          borderColor: colores[index % colores.length],
-          tension: 0.3,
-          fill: false,
-          pointRadius: 4,
-        })),
-      },
-      options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } },
-    });
-  }
-
-  private crearGraficoDistribucion(): void {
-    const canvas = document.getElementById('graficoDistribucion') as HTMLCanvasElement;
-    if (!canvas) return;
-    if (this.chartDistribucion) this.chartDistribucion.destroy();
-    if (!this.datosTablaAgrupados.length) return;
-
-    this.chartDistribucion = new Chart(canvas, {
-      type: 'bar',
-      data: {
-        labels: this.datosTablaAgrupados.map((c: any) => c.nombreCurso),
-        datasets: [{
-          label: 'Estudiantes',
-          data: this.datosTablaAgrupados.map((c: any) => c.totalEstudiantes),
-          backgroundColor: '#42a5f5',
-          borderRadius: 8,
-        }],
-      },
-      options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } },
-    });
   }
 
   private mostrarError(mensaje: string): void {
@@ -670,18 +900,21 @@ export class DocenteComponent implements OnInit, AfterViewInit {
     setTimeout(() => (this.errorMessage = null), 5000);
   }
 
+  // ─── CARGA DE DATOS BASE ──────────────────────────────────────────────────
+
   loadCursos(): void {
     if (this.idDocente && this.idDocente > 0) {
       this.cursoService.listarCursosPorDocente(this.idDocente).subscribe((data: Curso[]) => {
         this.cursos = data;
-        this.cursosNombre = data.map((c) => c.nombreCurso);
       });
     }
   }
 
   loadCertificados(): void {
     if (this.idDocente && this.idDocente > 0) {
-      this.certificadoService.listarCertificadosPorDocente(this.idDocente).subscribe((data: CertificadoDocente[]) => (this.certificados = data));
+      this.certificadoService.listarCertificadosPorDocente(this.idDocente).subscribe(
+        (data: CertificadoDocente[]) => (this.certificados = data)
+      );
     }
   }
 
@@ -690,12 +923,45 @@ export class DocenteComponent implements OnInit, AfterViewInit {
       (data: Persona) => {
         this.profileData = data;
         if (this.profileData?.fechaDeNacimiento) {
-          this.profileData.fechaDeNacimiento = new Date(this.profileData.fechaDeNacimiento).toISOString().split('T')[0];
+          this.profileData.fechaDeNacimiento = new Date(this.profileData.fechaDeNacimiento)
+            .toISOString().split('T')[0];
         }
       },
       () => (this.errorMessage = 'Error al cargar el perfil.')
     );
   }
+
+  cargarReseñas(): void {
+    const calificacionesPorCurso: { [key: string]: number[] } = {
+      'Gasfitería Básica': [5, 5, 4, 5, 5],
+      'Gasfitería Avanzada': [4, 5, 4, 4],
+      'Electricidad Domiciliaria': [4, 4, 5, 4],
+      'Carpintería General': [4, 3, 4, 4],
+      'Albañilería Estructural': [3, 4, 3]
+    };
+
+    const promedioPorCurso: { [key: string]: number } = {};
+    Object.keys(calificacionesPorCurso).forEach(curso => {
+      const califs = calificacionesPorCurso[curso];
+      promedioPorCurso[curso] = parseFloat(
+        (califs.reduce((a, b) => a + b, 0) / califs.length).toFixed(1)
+      );
+    });
+
+    this.reseñas = Object.keys(promedioPorCurso).map(curso => ({
+      nombreCurso: curso,
+      calificacionPromedio: promedioPorCurso[curso],
+      totalResenas: calificacionesPorCurso[curso].length
+    }));
+  }
+
+  private obtenerCalificacionPromedioGlobal(): string {
+    if (!this.reseñas.length) return 'N/A';
+    const suma = this.reseñas.reduce((acc, r) => acc + r.calificacionPromedio, 0);
+    return (suma / this.reseñas.length).toFixed(1);
+  }
+
+  // ─── ACCIONES ─────────────────────────────────────────────────────────────
 
   onUpdateProfile(): void {
     if (!this.profileData) return;
