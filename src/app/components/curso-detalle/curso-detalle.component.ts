@@ -9,13 +9,15 @@ import { Seccion } from '../../models/seccion.model';
 import { Leccion } from '../../models/leccion.model';
 import { SafeUrlPipe } from '../../pipes/safe-url.pipe';
 
-// 🔹 NUEVAS IMPORTACIONES PARA INCRUSTAR DOCUMENTOS DE FORMA SEGURA
+// 🔹 NUEVO: Importamos FormsModule para leer los inputs (ngModel)
+import { FormsModule } from '@angular/forms'; 
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-curso-detalle',
   standalone: true,
-  imports: [CommonModule, SafeUrlPipe],
+  // 🔹 NUEVO: Añadimos FormsModule a los imports
+  imports: [CommonModule, SafeUrlPipe, FormsModule], 
   templateUrl: './curso-detalle.component.html',
   styleUrls: ['./curso-detalle.component.css'],
 })
@@ -35,9 +37,19 @@ export class CursoDetalleComponent implements OnInit {
   expandedResources: { [key: number]: boolean } = {};
   completedLessons: Set<number> = new Set();
 
-  // 🔹 VARIABLES PARA EL INTERRUPTOR DE VISTA (Video vs Material)
   vistaActiva: 'video' | 'material' = 'video';
   materialSeleccionadoUrl: SafeResourceUrl | null = null;
+  materialSeleccionadoRawUrl: string | null = null; 
+  esPdf: boolean = false;
+  pestanaActiva: string = 'descripcion';
+
+  // 🔹 NUEVO: Variables para controlar los inputs y el historial del foro/notas
+  nuevaPregunta: string = '';
+  nuevaNota: string = '';
+  
+  // Listas temporales para mostrar los datos en la vista (simulación frontend)
+  preguntasForo: { autor: string, texto: string, fecha: Date }[] = [];
+  misNotas: { texto: string, fecha: Date }[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -46,7 +58,7 @@ export class CursoDetalleComponent implements OnInit {
     private seccionService: SeccionService,
     private leccionService: LeccionService,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private sanitizer: DomSanitizer // 🔹 INYECTAMOS EL SANITIZER
+    private sanitizer: DomSanitizer 
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId); 
   }
@@ -56,10 +68,13 @@ export class CursoDetalleComponent implements OnInit {
     
     if (this.isBrowser && this.cursoId) {
       localStorage.setItem('cursoId', this.cursoId.toString());
-      console.log('💾 Curso ID guardado en localStorage:', this.cursoId);
     }
 
     this.cargarCurso();
+  }
+
+  cambiarPestana(pestana: string): void {
+    this.pestanaActiva = pestana;
   }
 
   cargarCurso() {
@@ -79,13 +94,8 @@ export class CursoDetalleComponent implements OnInit {
 
   regresarCursos(): void {
     if (!this.isBrowser) return;
-
     const idEstudianteLS = localStorage.getItem('idEstudiante');
-
-    if (!idEstudianteLS) {
-      console.error("❌ No se encontró idEstudiante en el localStorage");
-      return;
-    }
+    if (!idEstudianteLS) return;
 
     const idEstudiante = +idEstudianteLS;
     localStorage.removeItem('cursoId');
@@ -99,7 +109,6 @@ export class CursoDetalleComponent implements OnInit {
         this.cargarLeccionesPorSeccion();
       },
       error: (error) => {
-        console.error('Error cargando secciones:', error);
         this.cargando = false;
       }
     });
@@ -107,7 +116,6 @@ export class CursoDetalleComponent implements OnInit {
 
   cargarLeccionesPorSeccion() {
     let seccionesCargadas = 0;
-    
     if (this.secciones.length === 0) {
       this.cargando = false;
       return;
@@ -118,25 +126,15 @@ export class CursoDetalleComponent implements OnInit {
         next: (lecciones) => {
           this.leccionesPorSeccion[seccion.idSeccion] = lecciones.sort((a, b) => a.ordenLeccion - b.ordenLeccion);
           seccionesCargadas++;
-          
-          if (seccion.ordenSeccion === 1) {
-            this.expandedSections[seccion.idSeccion] = true;
-          }
-          
+          if (seccion.ordenSeccion === 1) this.expandedSections[seccion.idSeccion] = true;
           if (seccion.ordenSeccion === 1 && lecciones.length > 0 && !this.currentLesson) {
             this.seleccionarLeccion(lecciones[0], seccion);
           }
-          
-          if (seccionesCargadas === this.secciones.length) {
-            this.cargando = false;
-          }
+          if (seccionesCargadas === this.secciones.length) this.cargando = false;
         },
         error: (error) => {
-          console.error('Error cargando lecciones:', error);
           seccionesCargadas++;
-          if (seccionesCargadas === this.secciones.length) {
-            this.cargando = false;
-          }
+          if (seccionesCargadas === this.secciones.length) this.cargando = false;
         }
       });
     });
@@ -145,30 +143,18 @@ export class CursoDetalleComponent implements OnInit {
   seleccionarLeccion(leccion: Leccion, seccion: Seccion): void {
     this.currentLesson = leccion;
     this.currentSeccion = seccion;
-    
-    // 🔹 Forzamos a que siempre vuelva a mostrar el video al cambiar de lección
     this.volverAlVideo();
-    
     if (!this.completedLessons.has(leccion.idLeccion)) {
       this.completedLessons.add(leccion.idLeccion);
     }
   }
 
   esUltimaLeccion(): boolean {
-    if (!this.currentLesson || !this.secciones || !this.leccionesPorSeccion) {
-      return false;
-    }
-
+    if (!this.currentLesson || !this.secciones || !this.leccionesPorSeccion) return false;
     const ultimaSeccion = this.secciones[this.secciones.length - 1];
     const leccionesUltimaSeccion = this.leccionesPorSeccion[ultimaSeccion.idSeccion];
-
-    if (!leccionesUltimaSeccion || leccionesUltimaSeccion.length === 0) {
-      return false;
-    }
-
-    const ultimaLeccion = leccionesUltimaSeccion[leccionesUltimaSeccion.length - 1];
-
-    return this.currentLesson.idLeccion === ultimaLeccion.idLeccion;
+    if (!leccionesUltimaSeccion || leccionesUltimaSeccion.length === 0) return false;
+    return this.currentLesson.idLeccion === leccionesUltimaSeccion[leccionesUltimaSeccion.length - 1].idLeccion;
   }
 
   toggleSection(sectionId: number): void {
@@ -188,14 +174,12 @@ export class CursoDetalleComponent implements OnInit {
   }
 
   getProgressPercentage(): number {
-    const totalLessons = Object.values(this.leccionesPorSeccion)
-      .reduce((total, lecciones) => total + lecciones.length, 0);
+    const totalLessons = Object.values(this.leccionesPorSeccion).reduce((total, lecciones) => total + lecciones.length, 0);
     return totalLessons > 0 ? (this.completedLessons.size / totalLessons) * 100 : 0;
   }
 
   getProgressText(): string {
-    const totalLessons = Object.values(this.leccionesPorSeccion)
-      .reduce((total, lecciones) => total + lecciones.length, 0);
+    const totalLessons = Object.values(this.leccionesPorSeccion).reduce((total, lecciones) => total + lecciones.length, 0);
     return `${this.completedLessons.size} de ${totalLessons} lecciones completadas`;
   }
 
@@ -203,7 +187,6 @@ export class CursoDetalleComponent implements OnInit {
     if (this.currentLesson && this.currentSeccion) {
       const currentSeccionLecciones = this.leccionesPorSeccion[this.currentSeccion.idSeccion];
       const currentIndex = currentSeccionLecciones.findIndex(l => l.idLeccion === this.currentLesson!.idLeccion);
-      
       if (currentIndex < currentSeccionLecciones.length - 1) {
         this.seleccionarLeccion(currentSeccionLecciones[currentIndex + 1], this.currentSeccion);
       } else {
@@ -224,7 +207,6 @@ export class CursoDetalleComponent implements OnInit {
     if (this.currentLesson && this.currentSeccion) {
       const currentSeccionLecciones = this.leccionesPorSeccion[this.currentSeccion.idSeccion];
       const currentIndex = currentSeccionLecciones.findIndex(l => l.idLeccion === this.currentLesson!.idLeccion);
-      
       if (currentIndex > 0) {
         this.seleccionarLeccion(currentSeccionLecciones[currentIndex - 1], this.currentSeccion);
       } else {
@@ -249,43 +231,106 @@ export class CursoDetalleComponent implements OnInit {
     return this.completedLessons.has(lessonId);
   }
 
-  marcarComoCompletada(): void {
-    if (this.currentLesson) {
-      this.completedLessons.add(this.currentLesson.idLeccion);
-    }
-  }
-
-  getVideoUrl(leccionId: number): string {
-    const videoMap: { [key: number]: string } = {
-      1: 'https://www.sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4',
-      2: 'https://www.sample-videos.com/video123/mp4/480/big_buck_bunny_480p_1mb.mp4',
-      3: 'https://www.sample-videos.com/video123/mp4/360/big_buck_bunny_360p_1mb.mp4',
-    };
-    
-    return videoMap[leccionId] || 'https://www.sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4';
-  }
-
   irAEvaluacion(): void {
-    if (!this.currentSeccion) {
-      console.error("❌ No hay sección actual seleccionada.");
+    if (!this.currentSeccion) return;
+    this.router.navigate(['/evaluacion/seccion', this.currentSeccion.idSeccion]);
+  }
+
+  verMaterialEnPantalla(urlRuta: string | undefined): void {
+    if (!urlRuta) {
+      this.materialSeleccionadoUrl = null;
+      this.materialSeleccionadoRawUrl = null; 
+      this.esPdf = false;
       return;
     }
+    const urlNormalizada = urlRuta.replace(/\\/g, '/');
+    const urlMinuscula = urlNormalizada.toLowerCase();
+    const esDocx = urlMinuscula.endsWith('.docx') || urlMinuscula.endsWith('.doc');
+    this.esPdf = urlMinuscula.endsWith('.pdf');
+    let urlCompleta = '';
 
-    const idSeccion = this.currentSeccion.idSeccion;
-    this.router.navigate(['/evaluacion/seccion', idSeccion]);
-  }
+    // ⚠️ REEMPLAZA ESTE LINK POR TU TÚNEL DE CLOUDFLARE ACTIVO ⚠️
+    if (urlNormalizada.startsWith('uploads/')) {
+      urlCompleta = `https://servers-argument-recognize-alphabetical.trycloudflare.com/${urlNormalizada}`;
+    } else if (urlNormalizada.startsWith('http')) {
+      urlCompleta = urlNormalizada;
+    } else {
+      urlCompleta = `https://servers-argument-recognize-alphabetical.trycloudflare.com/${urlNormalizada}`;
+    }
 
-// 🔹 MÉTODOS NUEVOS PARA MANEJAR EL VISOR DE DOCUMENTOS
-  verMaterialEnPantalla(urlRuta: string | undefined): void {
-    if (!urlRuta) return; // Si el material no tiene URL, ignoramos el clic
-    
-    const urlCompleta = 'http://localhost:8888/' + urlRuta;
-    this.materialSeleccionadoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(urlCompleta);
+    this.materialSeleccionadoRawUrl = urlCompleta;
+    if (esDocx) {
+      const msViewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(urlCompleta)}`;
+      this.materialSeleccionadoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(msViewerUrl);
+    } else {
+      this.materialSeleccionadoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(urlCompleta);
+    }
     this.vistaActiva = 'material'; 
   }
 
   volverAlVideo(): void {
     this.vistaActiva = 'video';
     this.materialSeleccionadoUrl = null;
+    this.materialSeleccionadoRawUrl = null;
+    this.esPdf = false; 
+  }
+
+  descargarMaterial(): void {
+    if (this.materialSeleccionadoRawUrl) {
+      const url = this.materialSeleccionadoRawUrl;
+      const partesUrl = url.split('/');
+      const nombreArchivo = partesUrl.length > 0 ? partesUrl[partesUrl.length - 1] : 'recurso-aprendizaje';
+
+      fetch(url)
+        .then(response => {
+          if (!response.ok) throw new Error('Error de red al intentar descargar el recurso');
+          return response.blob();
+        })
+        .then(blob => {
+          const blobUrl = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = nombreArchivo;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(blobUrl);
+        })
+        .catch(error => {
+          const link = document.createElement('a');
+          link.href = url;
+          link.target = '_blank';
+          link.download = nombreArchivo;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        });
+    }
+  }
+
+  // 🔹 NUEVO: Funciones para interactuar con los foros y notas
+  enviarPregunta(): void {
+    if (this.nuevaPregunta.trim().length > 0) {
+      // Guardamos la pregunta en nuestra lista local
+      this.preguntasForo.unshift({
+        autor: 'Tú (Estudiante)', // Esto luego vendrá del usuario logueado
+        texto: this.nuevaPregunta,
+        fecha: new Date()
+      });
+      // Limpiamos el input
+      this.nuevaPregunta = '';
+    }
+  }
+
+  guardarNota(): void {
+    if (this.nuevaNota.trim().length > 0) {
+      // Guardamos la nota
+      this.misNotas.unshift({
+        texto: this.nuevaNota,
+        fecha: new Date()
+      });
+      // Limpiamos el textarea
+      this.nuevaNota = '';
+    }
   }
 }

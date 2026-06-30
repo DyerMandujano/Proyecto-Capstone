@@ -1,186 +1,115 @@
-<div class="container-fluid">
-  <!-- Header -->
-  <header class="text-center py-3">
-    <h5 class="skillup-title">SkillUp</h5>
+<div class="container-fluid min-vh-100 p-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff;">
+  
+  <header class="text-center py-3 mb-4">
+    <h5 class="fw-bold text-uppercase tracking-widest text-primary">SkillUp</h5>
   </header>
 
-  <!-- Contenido Principal -->
   <main class="px-md-4">
     
-    <!-- Loading -->
     @if (cargando) {
       <div class="text-center py-5">
-        <div class="spinner-border" role="status">
-          <span class="visually-hidden">Cargando...</span>
-        </div>
-        <p class="mt-2">Cargando curso...</p>
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2 text-white-50">Cargando curso...</p>
       </div>
     }
 
-    <!-- Error -->
     @if (error && !cargando) {
-      <div class="alert alert-danger text-center">
-        {{ error }}
-      </div>
+      <div class="alert alert-danger text-center">{{ error }}</div>
     }
 
-    <!-- Curso -->
     @if (curso && !cargando) {
-      <div class="course-header">
-        <div class="container">
-          <div class="row">
+      <div class="card border-0 shadow-lg p-4 rounded-4 mb-5" style="background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px);">
+        <div class="row align-items-center">
+          <div class="col-md-8">
+            <h1 class="text-white fw-bold display-5 mb-3">{{ curso.nombreCurso }}</h1>
+            <p class="lead text-white-50 mb-4">{{ curso.resumen }}</p>
             
-            <!-- Información del Curso -->
-            <div class="col-md-8">
-              <h1>{{ curso.nombreCurso }}</h1>
-              <p class="lead">{{ curso.resumen }}</p>
-              
-              <div class="rating">
-                <span class="star">★★★★☆</span>
-                <span class="ms-2">4.6 (920 reseñas)</span>
-              </div>
-              
-              <p class="mt-2"><strong>Duración:</strong> {{ curso.duracionMin }} minutos</p>
+            <div class="d-flex gap-4 mb-3">
+              <span class="text-warning">★★★★☆ <span class="text-white ms-2">4.6 (920 reseñas)</span></span>
+            </div>
+            
+            <div class="text-white-50">
+              <p><strong>Duración:</strong> {{ curso.duracionMin }} minutos</p>
               <p><strong>Nivel:</strong> {{ curso.nivel }}</p>
               <p><strong>Publicado:</strong> {{ curso.fechaPublicacion }}</p>
             </div>
+          </div>
 
-            <!-- IMAGEN PRINCIPAL Y ACCIÓN -->
-            <div class="col-md-4">
-              <!-- Imagen principal del curso -->
-              @if (curso.imagenCurso1) {
-                <div class="mb-4">
-                 <img src="/img/curso/{{ curso.imagenCurso1 }}"  
-     alt="{{ curso.nombreCurso }}" 
-     class="img-fluid rounded shadow course-main-image"
-     style="max-height: 250px; width: 100%; object-fit: cover;">
-                </div>
+          <div class="col-md-4 text-center">
+            @if (curso.imagenCurso1) {
+              <img src="/img/curso/{{ curso.imagenCurso1 }}" class="img-fluid rounded-3 shadow mb-3" style="max-height: 250px; width: 100%; object-fit: cover;">
+            }
+            
+            <div class="mt-2">
+              @if (estaMatriculado) {
+                <a [routerLink]="['/curso', cursoId, 'lecciones']" class="btn btn-success btn-lg w-100 rounded-pill shadow-sm">
+                  <i class="bi bi-play-fill me-2"></i>Continuar Curso
+                </a>
               } @else {
-                <div class="course-video-placeholder bg-light rounded d-flex align-items-center justify-content-center mb-4"
-                     style="height: 250px;">
-                  <p class="text-muted">Imagen del curso</p>
-                </div>
+                <button (click)="registrarMatricula()" class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm">
+                  <i class="bi bi-door-open me-2"></i>Matricularse al Curso
+                </button>
               }
-
-              <!-- Botón Acceder al Curso -->
-              <!-- Botón Acceder/Continuar -->
-                <div class="mt-3">
-                @if (estaMatriculado) {
-                    <!-- Si YA está matriculado -->
-                    <a [routerLink]="['/curso', cursoId, 'lecciones']" 
-                    class="btn btn-success btn-lg w-100 text-decoration-none">
-                    <i class="fas fa-play me-2"></i>Continuar Curso
-                    </a>
-                } @else {
-                    <!-- Si NO está matriculado -->
-                    <button (click)="registrarMatricula()" 
-                            class="btn btn-primary btn-lg w-100">
-                    <i class="fas fa-door-open me-2"></i>Matricularse al Curso
-                    </button>
-                    <p class="text-center mt-2">Curso gratuito</p>
-                    <small class="text-muted d-block text-center">
-                    Al hacer clic, te matricularemos en este curso
-                    </small>
-                }
-                </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Descripción Detallada -->
-      <div class="container course-content mt-5">
-        <div class="row">
-          <div class="col-lg-8">
-            
-            <!-- Lo que aprenderás -->
-            <section class="mb-5">
-              <h3 class="section-title">Lo que aprenderas</h3>
-               <p><strong>Descripción</strong> {{ curso.descripcion }}</p>
-            </section>
+      <div class="row g-5">
+        <div class="col-lg-8">
+          <section class="card border-0 shadow-sm p-4 rounded-4 mb-5" style="background: rgba(255, 255, 255, 0.05);">
+            <h3 class="text-primary fw-bold mb-3">Lo que aprenderás</h3>
+            <p class="text-white-50 fs-5">{{ curso.descripcion }}</p>
+          </section>
 
-
-            <!-- CONTENIDO DEL CURSO (Lecciones REALES) -->
-            <section class="mb-5">
-              <h3 class="section-title">Contenido del Curso</h3>
-              
-              @if (secciones.length === 0) {
-                <div class="alert alert-info">
-                  Este curso aún no tiene contenido disponible.
-                </div>
-              }
-
-              <div class="curriculum-preview">
-                @for (seccion of secciones; track seccion.idSeccion) {
-                  <div class="module-card mb-3">
-                    <h5 class="module-title">{{ seccion.nombreSeccion }}</h5>
-                    <ul class="lesson-list">
-                      @for (leccion of getLeccionesBySeccion(seccion.idSeccion); track leccion.idLeccion) {
-                        <li>
-                          <i class="fas fa-play-circle text-primary me-2"></i>
-                          {{ leccion.nombreLeccion }}
-                          <small class="text-muted ms-2">({{ leccion.duracion }} min)</small>
-                        </li>
-                      }
-                    </ul>
-                    @if (getLeccionesBySeccion(seccion.idSeccion).length === 0) {
-                      <p class="text-muted small mb-0">No hay lecciones en esta sección</p>
-                    }
-                  </div>
-                }
+          <section class="card border-0 shadow-sm p-4 rounded-4 mb-5" style="background: rgba(255, 255, 255, 0.05);">
+            <h3 class="text-primary fw-bold mb-4">Contenido del Curso</h3>
+            @for (seccion of secciones; track seccion.idSeccion) {
+              <div class="mb-4">
+                <h5 class="text-white fw-bold mb-3 border-bottom border-secondary pb-2">{{ seccion.nombreSeccion }}</h5>
+                <ul class="list-unstyled">
+                  @for (leccion of getLeccionesBySeccion(seccion.idSeccion); track leccion.idLeccion) {
+                    <li class="py-2 text-white-50">
+                      <i class="bi bi-play-circle me-2 text-primary"></i> {{ leccion.nombreLeccion }}
+                      <small class="text-white-50 float-end">({{ leccion.duracion }} min)</small>
+                    </li>
+                  }
+                </ul>
               </div>
-            </section>
+            }
+          </section>
 
-            <!-- DATOS DEL INSTRUCTOR (REAL) -->
-            <section class="mb-5">
-              <h3 class="section-title">Instructor</h3>
-                <div class="instructor-card bg-light rounded p-4 d-flex align-items-start">
-                   
-                  <div class="instructor-avatar rounded-circle overflow-hidden d-flex align-items-center justify-content-center me-4"
-     style="width: 150px; height: 150px;">
-  <img src="/img/docente/docente.jpg" style="width: 100%; height: 100%; object-fit: cover;">
-</div>
-                    <div>
-                    <h5 class="mb-1">Javier Garcia Montes</h5>
-                    <p class="text-muted mb-1"><strong>Experiencia:</strong>Multiples en formando nuevos trabajadores</p>
-                    <p class="text-muted mb-2"><strong>Grado Académico:</strong> Docente especializado</p>
-                    <div class="rating mb-2">
-                        <span class="star">★★★★★</span>
-                        <span class="ms-2">4.8</span>
-                    </div>
-                    <p class="small text-muted mb-0">
-                        Profesional con amplia experiencia en la industria y dedicado a la enseñanza.
-                    </p>
-                    </div>
-                </div>
-      
-            </section>
-
-          </div>
-
-          <!-- Reseñas (Sidebar) -->
-          <div class="col-lg-4">
-            <div class="activity-card">
-              <h4>Reseñas de Estudiantes</h4>
-              <div class="review-card">
-                <div class="rating mb-2">
-                  <span class="star">★★★★★</span>
-                </div>
-                <p>"Excelente curso, muy práctico y accesible."</p>
-                <small>- María López</small>
+          <section class="card border-0 shadow-sm p-4 rounded-4 mb-5" style="background: rgba(255, 255, 255, 0.05);">
+            <h3 class="text-primary fw-bold mb-4">Instructor</h3>
+            <div class="d-flex align-items-start">
+              <img src="/img/docente/docente.jpg" class="rounded-circle me-4 border border-2 border-primary" style="width: 120px; height: 120px; object-fit: cover;">
+              <div class="text-white-50">
+                <h5 class="text-white fw-bold mb-1">Javier Garcia Montes</h5>
+                <p class="mb-1"><strong>Experiencia:</strong> Formación técnica industrial</p>
+                <p class="mb-1"><strong>Grado Académico:</strong> Docente especializado</p>
+                <div class="text-warning mb-2">★★★★★ <span class="text-white">4.8</span></div>
+                <p class="small">Profesional con amplia experiencia en la industria y dedicado a la enseñanza.</p>
               </div>
-              <div class="review-card">
-                <div class="rating mb-2">
-                  <span class="star">★★★★☆</span>
-                </div>
-                <p>"Buen contenido, muy bien explicado."</p>
-                <small>- Carlos Rodríguez</small>
-              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="card border-0 shadow-sm p-4 rounded-4" style="background: rgba(255, 255, 255, 0.05);">
+            <h4 class="text-primary fw-bold mb-4">Reseñas de Estudiantes</h4>
+            <div class="bg-dark bg-opacity-50 p-3 rounded-3 mb-3">
+              <div class="text-warning mb-1">★★★★★</div>
+              <p class="text-white small mb-1">"Excelente curso, muy práctico y accesible."</p>
+              <small class="text-white-50">- María López</small>
+            </div>
+            <div class="bg-dark bg-opacity-50 p-3 rounded-3">
+              <div class="text-warning mb-1">★★★★☆</div>
+              <p class="text-white small mb-1">"Buen contenido, muy bien explicado."</p>
+              <small class="text-white-50">- Carlos Rodríguez</small>
             </div>
           </div>
         </div>
       </div>
     }
-
   </main>
 </div>

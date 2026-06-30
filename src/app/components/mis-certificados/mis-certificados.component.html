@@ -1,51 +1,55 @@
-<div class="container mt-5">
-  <h2 class="text-center mb-4" style="color: #0a192f; font-weight: bold;">
-    🎓 Mis Certificados y Logros
-  </h2>
+<div class="certificados-wrapper min-vh-100">
+  <div class="container py-5">
+    <h2 class="text-center mb-5 text-white fw-bold">
+      🎓 Mis Certificados y Logros
+    </h2>
 
-  <div *ngIf="loading" class="text-center p-5">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Cargando...</span>
+    <div *ngIf="loading" class="text-center p-5">
+      <div class="spinner-border text-warning" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
     </div>
-  </div>
 
-  <div *ngIf="!loading && certificados.length === 0" class="alert alert-info text-center">
-    Aún no tienes certificados. ¡Completa tus cursos para obtenerlos!
-  </div>
+    <div *ngIf="!loading && certificados.length === 0" class="alert alert-dark-custom text-center shadow-sm">
+      <i class="fas fa-info-circle me-2"></i> Aún no tienes certificados. ¡Completa tus cursos para obtenerlos!
+    </div>
 
-  <div *ngIf="!loading && certificados.length > 0" class="card shadow-sm">
-    <div class="card-body p-0">
-      <table class="table table-hover mb-0">
-        <thead class="table-light">
-          <tr>
-            <th class="py-3 ps-4">Curso</th>
-            <th class="py-3">Fecha de Emisión</th>
-            <th class="py-3">Código</th>
-            <th class="py-3 text-end pe-4">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let cert of certificados">
-            <td class="ps-4 align-middle fw-bold text-primary">
-              {{ cert.nombreCurso || cert.curso?.nombre || 'Curso SkillUp' }}
-            </td>
-            
-            <td class="align-middle">
-              {{ cert.fechaEmision | date:'dd/MM/yyyy' }}
-            </td>
-            
-            <td class="align-middle">
-              <span class="badge bg-secondary">{{ cert.codigoCertificado }}</span>
-            </td>
-            
-            <td class="text-end pe-4">
-              <button class="btn btn-warning btn-sm text-white" (click)="descargarCertificado(cert)">
-                <i class="fas fa-download me-1"></i> Descargar PDF
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div *ngIf="!loading && certificados.length > 0" class="card dark-card shadow-lg border-0 rounded-4 overflow-hidden">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table custom-dark-table table-hover mb-0">
+            <thead>
+              <tr>
+                <th class="py-3 ps-4 border-0">Curso</th>
+                <th class="py-3 border-0">Fecha de Emisión</th>
+                <th class="py-3 border-0">Código</th>
+                <th class="py-3 text-end pe-4 border-0">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cert of certificados">
+                <td class="ps-4 align-middle course-name">
+                  {{ cert.nombreCurso || cert.curso?.nombre || 'Curso SkillUp' }}
+                </td>
+                
+                <td class="align-middle text-light-gray">
+                  {{ cert.fechaEmision | date:'dd/MM/yyyy' }}
+                </td>
+                
+                <td class="align-middle">
+                  <span class="badge badge-code">{{ cert.codigoCertificado }}</span>
+                </td>
+                
+                <td class="text-end pe-4 align-middle">
+                  <button class="btn btn-yellow btn-sm" (click)="descargarCertificado(cert)">
+                    <i class="fas fa-download me-1"></i> Descargar PDF
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 </div>

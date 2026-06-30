@@ -10,32 +10,37 @@ export class LeccionService {
 
   private apiUrl = 'http://localhost:8888/api/lecciones';
 
-
   constructor(private http: HttpClient) {}
 
-  // 🔹 Obtener todas las lecciones por ID de Sección
   listarLeccionesPorSeccion(idSeccion: number): Observable<Leccion[]> {
     return this.http.get<Leccion[]>(`${this.apiUrl}/seccion/${idSeccion}`);
   }
 
-  // 🔹 Obtener una lección por su ID
+  // 🔹 CORRECCIÓN: Ruta arreglada para que coincida con el backend
   obtenerLeccionPorId(id: number): Observable<Leccion> {
-    return this.http.get<Leccion>(`${this.apiUrl}/leccion/${id}`);
+    return this.http.get<Leccion>(`${this.apiUrl}/${id}`);
   }
 
-  // 🔹 Insertar nueva lección
-  insertarLeccion(leccion: Leccion): Observable<string> {
-    return this.http.post(`${this.apiUrl}`, leccion, { responseType: 'text' });
+insertarLeccion(leccion: Leccion): Observable<string> {
+    const formData = new FormData();
+    formData.append('leccion', new Blob([JSON.stringify(leccion)], { type: 'application/json' }));
+
+    if (leccion.materiales) {
+      leccion.materiales.forEach((material) => {
+        if (material.archivoFisico) {
+          formData.append('archivos', material.archivoFisico, material.archivoFisico.name);
+        }
+      });
+    }
+    return this.http.post(`${this.apiUrl}`, formData, { responseType: 'text' });
   }
 
-  // 🔹 Actualizar lección existente (MODIFICADO PARA SUBIR ARCHIVOS FÍSICOS)
   actualizarLeccion(id: number, leccion: Leccion): Observable<string> {
     const formData = new FormData();
     
-    // 1. Convertimos los datos de la lección (texto) a un Blob tipo JSON
+    // Convertimos la lección a JSON Blob
     formData.append('leccion', new Blob([JSON.stringify(leccion)], { type: 'application/json' }));
 
-    // 2. Revisamos si hay archivos seleccionados desde la computadora y los adjuntamos
     if (leccion.materiales) {
       leccion.materiales.forEach((material) => {
         if (material.archivoFisico) {
@@ -44,12 +49,12 @@ export class LeccionService {
       });
     }
 
-    // 3. Enviamos el "paquete" (FormData) por PUT en lugar de mandar el objeto directo
-    return this.http.put(`${this.apiUrl}/leccion/${id}`, formData, { responseType: 'text' });
+    // 🔹 CORRECCIÓN: Ruta arreglada
+    return this.http.put(`${this.apiUrl}/${id}`, formData, { responseType: 'text' });
   }
 
-  // 🔹 Eliminar (cambiar estado) de una lección por ID
   eliminarLeccion(id: number): Observable<string> {
-    return this.http.delete(`${this.apiUrl}/leccion/${id}`, { responseType: 'text' });
+    // 🔹 CORRECCIÓN: Ruta arreglada
+    return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
   }
 }

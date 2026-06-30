@@ -48,17 +48,17 @@ export class ActualizarLeccionComponent implements OnInit {
         },
         error: (err: any) => console.error('Error al cargar la lección:', err)
       });
+    } else {
+      console.warn("No se encontró el ID en la URL.");
     }
   }
 
-  // 🔹 LA FUNCIÓN RECUPERADA: Captura el archivo desde la PC
   seleccionarArchivo(event: any, index: number): void {
     const file = event.target.files[0];
     if (file) {
       if (this.leccion.materiales) {
         this.leccion.materiales[index].archivoFisico = file;
         
-        // Autocompleta el nombre si está vacío
         if (!this.leccion.materiales[index].nombreArchivo) {
           this.leccion.materiales[index].nombreArchivo = file.name;
         }
@@ -70,7 +70,7 @@ export class ActualizarLeccionComponent implements OnInit {
     this.leccionService.actualizarLeccion(this.leccion.idLeccion, this.leccion).subscribe({
       next: (res: any) => {
         alert('✅ Lección y materiales actualizados correctamente');
-        this.regresarALista(); // Redirección segura
+        this.regresarALista(); 
       },
       error: (err: any) => {
         console.error('Error al actualizar:', err);
@@ -79,22 +79,18 @@ export class ActualizarLeccionComponent implements OnInit {
     });
   }
 
-  // 🔹 Cancelar acción
   cancelar(): void {
     this.regresarALista();
   }
 
-// 🔹 Redirección a prueba de fallos (Ruta Corregida)
   private regresarALista(): void {
     if (isPlatformBrowser(this.platformId)) {
       const idSeccionGuardado = localStorage.getItem('idSeccionActual');
       if (idSeccionGuardado && idSeccionGuardado !== '0') {
-        // 🔥 AQUÍ ESTÁ LA CORRECCIÓN: Ahora coincide con la URL de tu captura
         this.router.navigate([`/leccion/seccion/${idSeccionGuardado}`]);
         return;
       }
     }
-    // Fallback de emergencia
     this.router.navigate(['/']);
   }
 

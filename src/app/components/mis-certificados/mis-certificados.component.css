@@ -1,0 +1,78 @@
+/* Contenedor principal: Da el fondo oscuro a toda la pantalla */
+.certificados-wrapper {
+  background-color: #0b111e; /* El fondo azul muy oscuro de tu dashboard */
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Tarjeta que contiene la tabla (mismo color que las cards de tus cursos) */
+.dark-card {
+  background-color: #1e2638; /* Azul grisáceo oscuro */
+}
+
+/* Personalización de la tabla para modo oscuro */
+.custom-dark-table {
+  --bs-table-bg: transparent; 
+  --bs-table-color: #e2e8f0;
+  --bs-table-border-color: #2d3748;
+  --bs-table-hover-bg: #28334a; /* Color al pasar el mouse sobre la fila */
+  color: #e2e8f0;
+}
+
+/* Encabezado de la tabla */
+.custom-dark-table thead th {
+  background-color: #151b2b; /* Un poco más oscuro para separar el encabezado */
+  color: #9ca3af; /* Gris claro para los títulos */
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Celdas de la tabla */
+.custom-dark-table tbody td {
+  border-bottom: 1px solid #2d3748;
+}
+
+/* Texto del curso */
+.course-name {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Color para la fecha */
+.text-light-gray {
+  color: #9ca3af;
+}
+
+/* Botón amarillo (Igual al botón "Mis Certificados" de tu Navbar) */
+.btn-yellow {
+  background-color: #ffc107;
+  color: #1a1a1a;
+  font-weight: 600;
+  border: none;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-yellow:hover {
+  background-color: #e0a800;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+}
+
+/* Badge (Insignia) para el código del certificado */
+.badge-code {
+  background-color: #374151; /* Fondo gris oscuro */
+  color: #d1d5db;
+  font-weight: 500;
+  padding: 0.5em 0.8em;
+  border-radius: 6px;
+}
+
+/* Alerta personalizada para cuando no hay certificados */
+.alert-dark-custom {
+  background-color: #1e2638;
+  border: 1px dashed #4b5563;
+  color: #d1d5db;
+  border-radius: 8px;
+}
